@@ -31,7 +31,7 @@ if (lintResult.code !== 0) {
 
 console.log(`Testing package '${packageName}' ...`);
 const testResult = await new Deno.Command(Deno.execPath(), {
-  args: ["test"],
+  args: ["test", "--permit-no-files"],
   stdout: "piped",
   stderr: "piped",
   cwd: packageName,
