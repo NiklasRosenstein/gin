@@ -63,7 +63,7 @@ if (tagResult.code !== 0) {
 
 console.log(`Pushing tag '${tagName}' to remote repository ...`);
 const pushResult = await new Deno.Command("git", {
-  args: ["push", "origin", tagName],
+  args: ["push", "origin", tagName, ...(force ? ["--force"] : [])],
   stdout: "piped",
   stderr: "piped",
 }).spawn().output();
