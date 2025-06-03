@@ -234,7 +234,8 @@ export class Gin {
   async run(
     callback: (gin: Gin) => void | Promise<void>,
   ): Promise<void> {
-    this.warnings = []; // Reset warnings before running the pipeline
+    this.warnings = [];
+    this.pendingEmits = [];
     try {
       await callback(this);
     } catch (error) {
@@ -242,6 +243,9 @@ export class Gin {
       throw error;
     } finally {
       this.sink.close();
+
+      // Wait for all pending emits to complete
+      await Promise.all(this.pendingEmits);
 
       // Print warnings if any were collected
       if (this.warnings.length > 0) {

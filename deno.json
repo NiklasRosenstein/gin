@@ -14,5 +14,8 @@
   ],
   "imports": {
     "@std/assert": "jsr:@std/assert@^1.0.13"
+  },
+  "tasks": {
+    "checks": "deno fmt && deno lint --fix && deno check"
   }
 }
