@@ -1,3 +1,4 @@
+#!/usr/bin/env -S deno run --allow-read --allow-write --allow-run
 /**
  * This script updates the version of a package in `deno.json`, creates a corresponding tag and pushes
  * it to the remote repository.
