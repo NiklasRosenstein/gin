@@ -120,7 +120,7 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
   }
   generate(_gin: Gin, resource: WebApp): Promise<KubernetesObject[]> {
     const selectorLabels = {
-      "webapps.webapp.gin.jsr.io/v1alpha1": resource.metadata.name,
+      "webapp.gin.jsr.io/v1alpha1.WebApp": resource.metadata.name,
     };
 
     const deployment: KubernetesObject = {

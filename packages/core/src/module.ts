@@ -78,6 +78,10 @@ export class Module {
  * resource that was used to generate them (see {@link makeOriginLabels}). This allows Gin to track the origin of
  * resources and to provide better debugging information when needed. Note that, in order for this to function
  * correctly in all cases, the `metadata.namespace` must be set on namespaced Gin resources.
+ *
+ * When you are looking to uniquely associate a resource with the Gin custom resource that was used to generate it,
+ * you should use the canonical resource name as if it was a Kubernetes CRD. For example, for the `WebApp` resource
+ * in `webapp.gin.jsr.io/v1alpha1`, the canonical name would be `webapp.gin.jsr.io/v1alpha1.WebApp`.
  */
 export interface ResourceAdapter<T extends KubernetesObject = KubernetesObject> {
   /**
