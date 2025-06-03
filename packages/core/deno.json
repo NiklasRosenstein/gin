@@ -1,13 +1,16 @@
 {
   "name": "@gin/core",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "exports": {
-    ".": "./src/mod.ts"
+    ".": "./src/mod.ts",
+    "./util": "./src/util.ts"
   },
   "license": "MIT",
   "imports": {
     "@eemeli/yaml": "jsr:@eemeli/yaml@^2.8.0",
+    "@std/cli": "jsr:@std/cli@^1.0.19",
     "@std/regexp": "jsr:@std/regexp@^1.0.1",
-    "typescript-rtti": "npm:typescript-rtti@^0.9.6"
+    "lodash": "npm:lodash@^4.17.21",
+    "stacktracey": "npm:stacktracey@^2.1.8"
   }
 }

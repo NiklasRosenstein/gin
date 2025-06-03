@@ -1,0 +1,4 @@
+[tools]
+deno = "2"
+helm = "latest"
+kubectl = "latest"
