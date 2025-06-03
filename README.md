@@ -33,8 +33,8 @@ provide reusable components. Here's a simple example of how to deploy a simple w
 
 ```ts
 // webapp.ts
-import { Gin } from "@gin/core";
-import { WebApp } from "@gin/webapp-v1alpha1";
+import { Gin } from "jsr:@gin/core";
+import { WebApp } from "jsr:@gin/webapp-v1alpha1";
 
 new Gin().run((gin) => {
   gin.emit<WebApp>({

@@ -7,8 +7,8 @@ This package provides the `WebApp` resource that is a simple abstraction for des
 ## Basic Example
 
 ```ts
-import { Gin } from "@gin/core";
-import { WebApp } from "@gin/webapp-v1alpha1";
+import { Gin } from "jsr:@gin/core";
+import { WebApp } from "jsr:@gin/webapp-v1alpha1";
 
 new Gin().run((gin) => {
   gin.emit<WebApp>({
