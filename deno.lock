@@ -55,14 +55,14 @@
       "jsr:@std/assert@^1.0.13"
     ],
     "members": {
-      "core": {
+      "packages/core": {
         "dependencies": [
           "jsr:@eemeli/yaml@^2.8.0",
           "jsr:@std/regexp@^1.0.1",
           "npm:typescript-rtti@~0.9.6"
         ]
       },
-      "webapp-v1alpha1": {
+      "packages/webapp-v1alpha1": {
         "dependencies": [
           "jsr:@gin/core@0.1"
         ]

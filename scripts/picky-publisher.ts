@@ -3,11 +3,13 @@
  * If the `{version}` does not match the version defined in the `deno.json`, it will throw an error.
  */
 
-const [packageName, version] = Deno.args[0]!.split("@v");
+let [packageName, version] = Deno.args[0]!.split("@v");
 if (!packageName || !version) {
   console.error("Usage: deno run scripts/picky-publisher.ts <packageName>@v<version>");
   Deno.exit(1);
 }
+
+packageName = `packages/${packageName}`;
 
 const denoJson = JSON.parse(Deno.readTextFileSync(`${packageName}/deno.json`));
 if (denoJson.version !== version) {

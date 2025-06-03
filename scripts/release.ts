@@ -13,7 +13,7 @@ if (!packageName || !version) {
 const tagName = `${packageName}@v${version}`;
 const force = Deno.args.includes("--force") || Deno.args.includes("-f");
 
-const denoJsonPath = `${packageName}/deno.json`;
+const denoJsonPath = `packages/${packageName}/deno.json`;
 const denoJson = JSON.parse(Deno.readTextFileSync(denoJsonPath));
 if (denoJson.version !== version) {
   denoJson.version = version;
