@@ -2,6 +2,16 @@ import type { KubernetesObject } from "./types.ts";
 import type { Gin } from "./gin.ts";
 
 /**
+ * Some modules may require options to be created. If a Gin package exports a function instead of a {@link Module},
+ * the function is expected to accept an options object with the `type` field matching what it expects and return a
+ * {@link Module} instance.
+ */
+export interface ModuleOptions {
+  type: string;
+  [key: string]: unknown;
+}
+
+/**
  * A module is what can be exported by a TypeScript package to extend Gin.
  *
  * Currently it can only be used to register {@link ResourceAdapter}s for a specific API version and kind.

@@ -87,6 +87,8 @@ export interface KubernetesObject {
     /**
      * The unique identifiers of all resources that were produced by the resource in a {@link ResourceAdapter}.
      * This field is set automatically when the resource is processed by {@link Gin#processOnce} or {@link Gin#emit}.
+     * When this field is set (and not `undefined`), it indicates that the resource was processed by a resource
+     * adapter.
      */
     children?: ResourceLocator[];
 
@@ -96,6 +98,14 @@ export interface KubernetesObject {
      * it.
      */
     parent?: ResourceLocator;
+
+    /**
+     * Notes emitted during the processing of the resource.
+     */
+    notes?: {
+      kind: "Info" | "Warning" | "Error";
+      message: string;
+    }[];
   };
 }
 
