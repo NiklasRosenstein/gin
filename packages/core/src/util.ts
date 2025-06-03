@@ -1,4 +1,5 @@
 import { assert } from "@std/assert/assert";
+import StackTracey from "stacktracey";
 
 // When we describe the origin of a resource, we need to split it into multiple labels because Kubernetes label
 // values cannot contain slashes.
@@ -63,4 +64,14 @@ export function isValidKubernetesLabelValue(value: string): boolean {
     return false; // Kubernetes label values must be 63 characters or less
   }
   return /^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$/.test(value);
+}
+
+/**
+ * Returns the filename and line number of the caller of this function.
+ */
+export function getCallerFileAndLine(depth: number = 1): string {
+  const trace = new StackTracey(new Error());
+  const file = trace.items[depth + 1]?.file || "<unknown>";
+  const line = trace.items[depth + 1]?.line || "??";
+  return `${file}:${line}`;
 }

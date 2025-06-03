@@ -67,10 +67,24 @@ export class Module {
 /**
  * A ResourceAdapter is a component that materializes a Kubernetes-style resource into one or more other Kubernetes
  * resources. This is used to create abstractions that are expanded to real Kubernetes resources at rendering time.
+ *
+ * When a {@link Gin} instance encounters a resource of an `apiVersion` and `kind` that matches a known
+ * {@link ResourceAdapter} registered in a {@link Module}, it will use that adapter to validate the resource and
+ * generate the actual Kubernetes resources that should be created in the cluster. Note that an adapter can return
+ * resources that need to be further processed by other adapters, allowing for complex resource graphs to be built
+ * from simple abstractions.
+ *
+ * Resources returned by {@link ResourceAdapter#generate} are automatically labeled with labels that identify the
+ * resource that was used to generate them (see {@link makeOriginLabels}). This allows Gin to track the origin of
+ * resources and to provide better debugging information when needed. Note that, in order for this to function
+ * correctly in all cases, the `metadata.namespace` must be set on namespaced Gin resources.
  */
 export interface ResourceAdapter<T extends KubernetesObject = KubernetesObject> {
   /**
    * Validate the resource.
+   *
+   * At the very least, if the resource is scoped or cluster-wide, the adapter should check that the
+   * `metadata.namespace` is set correctly.
    *
    * @param gin - The Gin instance that is validating the resource.
    * @param resource - The Kubernetes-style resource to validate.

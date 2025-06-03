@@ -2,11 +2,13 @@
  * This file provides the main entrypoint for a Gin pipeline to render Kubernetes manifests.
  */
 
-import type { KubernetesObject } from "./mod.ts";
 import { Module, type ResourceAdapter } from "./module.ts";
 import { escape } from "@std/regexp/escape";
 import { type Sink, StdoutSink as YamlStdoutSink } from "./sink.ts";
-import { makeOriginLabels } from "./util.ts";
+import { type KubernetesObject, ResourceLocator } from "./types.ts";
+import { getCallerFileAndLine } from "./util.ts";
+import { parseArgs } from "@std/cli";
+import _ from "lodash";
 
 interface PackageMapping {
   /**
@@ -46,6 +48,10 @@ export class Gin {
 
   // Pending emits, collect at the end of `run()`.
   private pendingEmits: Promise<void>[] = [];
+
+  // Resources that we've emitted so far. Used to catch when the same unique resource identifier is emitted multiple
+  // times.
+  private emittedResources: Map<string, ResourceLocator> = new Map();
 
   // Sink for emitted resources.
   private sink: Sink = new YamlStdoutSink();
@@ -187,8 +193,14 @@ export class Gin {
    *    no adapter is found, the original resource is returned as a single-element array.
    */
   async processOnce<T extends KubernetesObject>(resource: T): Promise<KubernetesObject[]> {
+    resource.gin = resource.gin || {};
+    resource.gin.children = [];
+
+    // Find a matching adapter for the resource.
     const adapter = await this.findAdapter(resource);
     if (!adapter) {
+      // If no adapter is found, we check if the API version maps to a package. In that case, we just want to
+      // let the user know that they could be missing it.
       const packageName = this.resolvePackageNameFromApiVersion(resource.apiVersion);
       if (packageName) {
         this.warnings.push(
@@ -196,32 +208,82 @@ export class Gin {
             `'${resource.apiVersion}, despite mapping to package '${packageName}'.`,
         );
       }
+
       return [resource]; // No adapter found, return the resource as is
     }
+
     await adapter.validate(this, resource);
     return (await adapter.generate(this, resource)).map((res) => {
-      res.metadata = res.metadata || {};
-      res.metadata.labels = res.metadata.labels || {};
-      res.metadata.labels = { ...res.metadata.labels, ...makeOriginLabels(resource) };
+      res.gin = res.gin || {};
+      res.gin.parent = ResourceLocator.of(resource);
+      resource.gin?.children?.push(ResourceLocator.of(res));
       return res;
     });
   }
 
   /**
    * Emits a Kubernetes resource, processing it through the Gin pipeline and sending it to the configured sink.
+   * Note that the resource as well as its generated children (if any) are all emitted to the sink. The sink is
+   * responsible for filtering out resources that should not be emitted, such as those that have the `parent` field
+   * in {@link KubernetesObject#gin} set.
+   *
+   * Note that this method creates a deep clone of the `resource` object, so it can be safely modified in-place later
+   * (which is happening in {@link Gin#processOnce}).
    *
    * @param resource - The Kubernetes resource to emit.
    */
   async emit<T extends KubernetesObject>(resource: T): Promise<void> {
-    // We store the promise in `pendingEmits` to ensure that all emits are awaited at the end of the pipeline.
-    // This is so we don't require the user to await the emit themselves.
+    resource = _.cloneDeep(resource);
+    resource.gin = resource.gin || {};
+    resource.gin.emittedFrom = getCallerFileAndLine();
+
+    // Check if we emitted this resource before. If we did, we issue a warning.
+    // TODO: Produce structured warnings, so we can include the resource's Gin metadata.
+    const locator = ResourceLocator.of(resource);
+    if (this.emittedResources.has(locator.toString())) {
+      this.warnings.push(
+        `Resource of kind '${resource.kind}' with API version '${resource.apiVersion}' and name ` +
+          `'${resource.metadata.name}' has already been emitted before. The resource appears more than once in the output.`,
+      );
+    }
+    this.emittedResources.set(locator.toString(), locator);
+
     const promise = (async () => {
       console.trace(`Emitting resource of kind '${resource.kind}' with API version '${resource.apiVersion}'`);
-      const resources = await this.processOnce(resource);
-      for (const res of resources) {
-        await this.sink.accept(res);
+
+      const children = await this.processOnce(resource);
+
+      // Only send the resource to the sink after it has been processed. The `processOnce` method modifies the
+      // resource in place (e.g. by ensuring the `gin` field is updated appropriately).
+      this.sink.accept(resource);
+
+      // If the object is not processed by a the adapter, we will get a list with a single resource in it.
+      if (children.length === 1 && children[0] === resource) {
+        return; // No processing was done, we just emit the original resource
+      }
+
+      // If we have a single resource, and it has the same locator as the original resource, but it's not the same,
+      // then something is wrong in the resource adapter. Since we know the behaviour of `processOnce` is to return
+      // the same object, it must have come from an adapter.
+      if (children.length === 1 && locator.equals(ResourceLocator.of(children[0]!))) {
+        throw new Error(
+          `Resource adapter for '${resource.kind}' with API version '${resource.apiVersion}' ` +
+            `returned a single resource that is the same as the original resource, but it is not the same object. ` +
+            `This is likely a bug in the resource adapter.`,
+        );
+      }
+
+      // Recursively emit the new resources.
+      for (const res of children) {
+        res.gin = res.gin || {};
+        res.gin.loadedFromRoot = resource.gin?.loadedFromRoot || resource.gin?.loadedFrom;
+        res.gin.emittedFromRoot = resource.gin?.emittedFromRoot || resource.gin?.emittedFrom;
+        await this.emit(res);
       }
     })();
+
+    // We store the promise in `pendingEmits` to ensure that all emits are awaited at the end of the pipeline.
+    // This is so we don't require the user to await the emit themselves.
     this.pendingEmits.push(promise);
     return await promise;
   }
@@ -234,8 +296,12 @@ export class Gin {
   async run(
     callback: (gin: Gin) => void | Promise<void>,
   ): Promise<void> {
+    const args = parseRunArgs();
+    this.sink = new YamlStdoutSink(args);
+
     this.warnings = [];
     this.pendingEmits = [];
+
     try {
       await callback(this);
     } catch (error) {
@@ -256,4 +322,27 @@ export class Gin {
       }
     }
   }
+}
+
+/**
+ * Command-line arguments usable with {@link Gin#run}.
+ */
+interface RunArgs {
+  /**
+   * Whether to keep the `gin` metadata field in emitted resources.
+   */
+  keepGinMetadata: boolean;
+
+  /**
+   * Whether to emit resources that have been processed by a {@link ResourceAdapter}.
+   */
+  emitParents: boolean;
+}
+
+function parseRunArgs(): RunArgs {
+  const args = parseArgs(Deno.args);
+  return {
+    keepGinMetadata: args["keep-gin-metadata"] || args["m"] ? true : false,
+    emitParents: args["emit-parents"] || args["p"] ? true : false,
+  };
 }
