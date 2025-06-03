@@ -21,6 +21,16 @@ if (denoJson.version !== version) {
 
   console.log(`Updated version in ${denoJsonPath} to ${version}`);
 
+  // Make sure we run one last check.
+  const checksResult = await new Deno.Command("deno", {
+    args: ["run", "checks"],
+  }).spawn().output();
+
+  if (checksResult.code !== 0) {
+    console.error(`Checks failed`);
+    Deno.exit(1);
+  }
+
   const addResult = await new Deno.Command("git", {
     args: ["add", denoJsonPath],
   }).spawn().output();
@@ -31,16 +41,6 @@ if (denoJson.version !== version) {
   }
 
   console.log(`Added ${denoJsonPath} to git staging area.`);
-
-  // Make sure we run one last check.
-  const checksResult = await new Deno.Command("deno", {
-    args: ["run", "checks"],
-  }).spawn().output();
-
-  if (checksResult.code !== 0) {
-    console.error(`Checks failed`);
-    Deno.exit(1);
-  }
 
   const commitResult = await new Deno.Command("git", {
     args: ["commit", "-m", `Update version for ${packageName} to v${version}`],
