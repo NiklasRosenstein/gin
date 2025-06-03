@@ -1,4 +1,5 @@
 import type { Gin, KubernetesObject, ResourceAdapter } from "@gin/core";
+import { dropUndefined } from "@gin/core/util";
 
 export interface WebApp extends KubernetesObject {
   apiVersion: "webapp.gin.jsr.io/v1alpha1";
@@ -109,21 +110,21 @@ export interface WebApp extends KubernetesObject {
 }
 
 export class WebAppConverter implements ResourceAdapter<WebApp> {
-  validate(_gin: Gin, resource: WebApp): Promise<void> {
+  async validate(_gin: Gin, resource: WebApp): Promise<void> {
     if (!resource.metadata.namespace) {
       throw new Error("WebApp metadata.namespace is required");
     }
-    if (resource.spec.replicas && resource.spec.replicas < 1) {
+    if (resource.spec.replicas !== undefined && resource.spec.replicas < 1) {
       throw new Error("WebApp spec.replicas must be at least 1");
     }
-    return Promise.resolve();
+    return await Promise.resolve();
   }
   generate(_gin: Gin, resource: WebApp): Promise<KubernetesObject[]> {
     const selectorLabels = {
-      "webapp.gin.jsr.io/v1alpha1.WebApp": resource.metadata.name,
+      [`${resource.apiVersion}.${resource.kind}`]: resource.metadata.name,
     };
 
-    const deployment: KubernetesObject = {
+    const deployment: KubernetesObject = dropUndefined({
       apiVersion: "apps/v1",
       kind: "Deployment",
       metadata: {
@@ -144,38 +145,34 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
             annotations: resource.spec.podAnnotations,
           },
           spec: {
-            containers: [
-              {
-                name: "web",
-                image: resource.spec.image,
-                ports: [
-                  {
-                    containerPort: resource.spec.port ?? 8080,
-                  },
-                ],
-                env: Object.entries(resource.spec.env || {}).map(([name, value]) => ({
-                  name,
-                  value,
-                })),
-                envFrom: (resource.spec.envFromSecrets || []).map((secretName) => ({
-                  secretRef: { name: secretName },
-                })),
-                securityContext: {
-                  allowPrivilegeEscalation: false,
-                  runAsNonRoot: !resource.spec.allowRunAsRoot,
-                  runAsUser: resource.spec.allowRunAsRoot ? undefined : 1000, // Non-root user
+            containers: [dropUndefined({
+              name: "web",
+              image: resource.spec.image,
+              ports: [
+                {
+                  containerPort: resource.spec.port ?? 8080,
                 },
-                resources: resource.spec.resources,
+              ],
+              env: resource.spec.env && Object.keys(resource.spec.env).length > 0
+                ? Object.entries(resource.spec.env).map(([name, value]) => ({ name, value }))
+                : undefined,
+              envFrom: resource.spec.envFromSecrets && resource.spec.envFromSecrets.length > 0
+                ? resource.spec.envFromSecrets.map((secretName) => ({ secretRef: { name: secretName } }))
+                : undefined,
+              securityContext: {
+                allowPrivilegeEscalation: false,
+                runAsNonRoot: !resource.spec.allowRunAsRoot,
               },
-            ],
+              resources: resource.spec.resources,
+            })],
             nodeName: resource.spec.nodeName,
             nodeSelector: resource.spec.nodeSelector,
           },
         },
       },
-    };
+    });
 
-    const service: KubernetesObject = {
+    const service: KubernetesObject = dropUndefined({
       apiVersion: "v1",
       kind: "Service",
       metadata: {
@@ -194,7 +191,7 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
         ],
         type: "ClusterIP", // Default service type
       },
-    };
+    });
 
     let tlsSecretName: string | undefined;
     if (!resource.spec.tlsSecretName && (resource.spec.clusterIssuer || resource.spec.issuer)) {
@@ -203,7 +200,7 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
       tlsSecretName = resource.spec.tlsSecretName;
     }
 
-    const ingress: KubernetesObject = {
+    const ingress: KubernetesObject = dropUndefined({
       apiVersion: "networking.k8s.io/v1",
       kind: "Ingress",
       metadata: {
@@ -243,7 +240,7 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
           }]
           : undefined,
       },
-    };
+    });
 
     return Promise.resolve([deployment, service, ingress]);
   }
