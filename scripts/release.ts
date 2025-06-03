@@ -26,20 +26,28 @@ if (denoJson.version !== version) {
   }).spawn().output();
 
   if (addResult.code !== 0) {
-    const addError = new TextDecoder().decode(addResult.stderr);
-    console.error(`Adding file to git failed:\n${addError}`);
+    console.error(`Adding file to git failed`);
     Deno.exit(1);
   }
 
   console.log(`Added ${denoJsonPath} to git staging area.`);
+
+  // Make sure we run one last check.
+  const checksResult = await new Deno.Command("deno", {
+    args: ["run", "checks"],
+  }).spawn().output();
+
+  if (checksResult.code !== 0) {
+    console.error(`Checks failed`);
+    Deno.exit(1);
+  }
 
   const commitResult = await new Deno.Command("git", {
     args: ["commit", "-m", `Update version for ${packageName} to v${version}`],
   }).spawn().output();
 
   if (commitResult.code !== 0) {
-    const commitError = new TextDecoder().decode(commitResult.stderr);
-    console.error(`Committing changes failed:\n${commitError}`);
+    console.error(`Committing changes failed`);
     Deno.exit(1);
   }
 }
@@ -50,8 +58,7 @@ const tagResult = await new Deno.Command("git", {
 }).spawn().output();
 
 if (tagResult.code !== 0) {
-  const tagError = new TextDecoder().decode(tagResult.stderr);
-  console.error(`Tagging failed:\n${tagError}`);
+  console.error(`Tagging failed`);
   Deno.exit(1);
 }
 
@@ -61,8 +68,7 @@ const pushResult = await new Deno.Command("git", {
 }).spawn().output();
 
 if (pushResult.code !== 0) {
-  const pushError = new TextDecoder().decode(pushResult.stderr);
-  console.error(`Pushing tag failed:\n${pushError}`);
+  console.error(`Pushing tag failed`);
   Deno.exit(1);
 }
 

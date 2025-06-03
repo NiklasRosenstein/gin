@@ -24,8 +24,7 @@ const lintResult = await new Deno.Command(Deno.execPath(), {
 }).spawn().output();
 
 if (lintResult.code !== 0) {
-  const lintError = new TextDecoder().decode(lintResult.stderr);
-  console.error(`Linting failed:\n${lintError}`);
+  console.error(`Linting failed.`);
   Deno.exit(1);
 }
 
@@ -36,8 +35,7 @@ const testResult = await new Deno.Command(Deno.execPath(), {
 }).spawn().output();
 
 if (testResult.code !== 0) {
-  const lintError = new TextDecoder().decode(testResult.stderr);
-  console.error(`Linting failed:\n${lintError}`);
+  console.error(`Testing failed.`);
   Deno.exit(1);
 }
 
@@ -48,7 +46,6 @@ const publishResult = await new Deno.Command(Deno.execPath(), {
 }).spawn().output();
 
 if (publishResult.code !== 0) {
-  const publishError = new TextDecoder().decode(publishResult.stderr);
-  console.error(`Publishing failed:\n${publishError}`);
+  console.error(`Publishing failed.`);
   Deno.exit(1);
 }
