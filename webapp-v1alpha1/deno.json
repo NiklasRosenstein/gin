@@ -1,0 +1,9 @@
+{
+  "name": "@gin/webapp-v1alpha1",
+  "version": "0.0.0",
+  "exports": "./src/mod.ts",
+  "license": "MIT",
+  "imports": {
+    "@gin/core": "jsr:@gin/core@0.1.0"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "@gin/core",
+  "version": "0.1.0",
+  "exports": {
+    ".": "./src/mod.ts"
+  },
+  "license": "MIT",
+  "imports": {
+    "@eemeli/yaml": "jsr:@eemeli/yaml@^2.8.0",
+    "@std/regexp": "jsr:@std/regexp@^1.0.1",
+    "typescript-rtti": "npm:typescript-rtti@^0.9.6"
+  }
+}
