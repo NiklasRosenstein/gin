@@ -10,6 +10,9 @@ if (!packageName || !version) {
   Deno.exit(1);
 }
 
+const tagName = `${packageName}@v${version}`;
+const force = Deno.args.includes("--force") || Deno.args.includes("-f");
+
 const denoJsonPath = `${packageName}/deno.json`;
 const denoJson = JSON.parse(Deno.readTextFileSync(denoJsonPath));
 if (denoJson.version !== version) {
@@ -33,7 +36,7 @@ if (denoJson.version !== version) {
   console.log(`Added ${denoJsonPath} to git staging area.`);
 
   const commitResult = await new Deno.Command("git", {
-    args: ["commit", "-m", `Update version to ${version}`],
+    args: ["commit", "-m", `Update version for ${packageName} to v${version}`],
     stdout: "piped",
     stderr: "piped",
   }).spawn().output();
@@ -46,9 +49,8 @@ if (denoJson.version !== version) {
 }
 
 console.log(`Creating tag 'v${version}' for package '${packageName}' ...`);
-const tagName = `${packageName}@v${version}`;
 const tagResult = await new Deno.Command("git", {
-  args: ["tag", tagName],
+  args: ["tag", tagName, ...(force ? ["-f"] : []), "-m", `Release ${tagName}`],
   stdout: "piped",
   stderr: "piped",
 }).spawn().output();
