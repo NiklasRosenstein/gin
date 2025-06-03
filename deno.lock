@@ -64,7 +64,7 @@
       },
       "webapp-v1alpha1": {
         "dependencies": [
-          "jsr:@gin/core@0.1.0"
+          "jsr:@gin/core@0.1"
         ]
       }
     }
