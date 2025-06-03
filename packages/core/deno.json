@@ -7,7 +7,6 @@
   "license": "MIT",
   "imports": {
     "@eemeli/yaml": "jsr:@eemeli/yaml@^2.8.0",
-    "@std/regexp": "jsr:@std/regexp@^1.0.1",
-    "typescript-rtti": "npm:typescript-rtti@^0.9.6"
+    "@std/regexp": "jsr:@std/regexp@^1.0.1"
   }
 }
