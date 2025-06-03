@@ -23,8 +23,6 @@ if (denoJson.version !== version) {
 
   const addResult = await new Deno.Command("git", {
     args: ["add", denoJsonPath],
-    stdout: "piped",
-    stderr: "piped",
   }).spawn().output();
 
   if (addResult.code !== 0) {
@@ -37,8 +35,6 @@ if (denoJson.version !== version) {
 
   const commitResult = await new Deno.Command("git", {
     args: ["commit", "-m", `Update version for ${packageName} to v${version}`],
-    stdout: "piped",
-    stderr: "piped",
   }).spawn().output();
 
   if (commitResult.code !== 0) {
@@ -51,8 +47,6 @@ if (denoJson.version !== version) {
 console.log(`Creating tag 'v${version}' for package '${packageName}' ...`);
 const tagResult = await new Deno.Command("git", {
   args: ["tag", tagName, ...(force ? ["-f"] : []), "-m", `Release ${tagName}`],
-  stdout: "piped",
-  stderr: "piped",
 }).spawn().output();
 
 if (tagResult.code !== 0) {
@@ -64,8 +58,6 @@ if (tagResult.code !== 0) {
 console.log(`Pushing tag '${tagName}' to remote repository ...`);
 const pushResult = await new Deno.Command("git", {
   args: ["push", "origin", tagName, ...(force ? ["--force"] : [])],
-  stdout: "piped",
-  stderr: "piped",
 }).spawn().output();
 
 if (pushResult.code !== 0) {
