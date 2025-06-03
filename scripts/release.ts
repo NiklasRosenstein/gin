@@ -9,11 +9,40 @@ if (!packageName || !version) {
   Deno.exit(1);
 }
 
-console.log(`Updating version of package '${packageName}' to ${version} ...`);
 const denoJsonPath = `${packageName}/deno.json`;
 const denoJson = JSON.parse(Deno.readTextFileSync(denoJsonPath));
-denoJson.version = version;
-Deno.writeTextFileSync(denoJsonPath, JSON.stringify(denoJson, null, 2));
+if (denoJson.version !== version) {
+  denoJson.version = version;
+  Deno.writeTextFileSync(denoJsonPath, JSON.stringify(denoJson, null, 2));
+
+  console.log(`Updated version in ${denoJsonPath} to ${version}`);
+
+  const addResult = await new Deno.Command("git", {
+    args: ["add", denoJsonPath],
+    stdout: "piped",
+    stderr: "piped",
+  }).spawn().output();
+
+  if (addResult.code !== 0) {
+    const addError = new TextDecoder().decode(addResult.stderr);
+    console.error(`Adding file to git failed:\n${addError}`);
+    Deno.exit(1);
+  }
+
+  console.log(`Added ${denoJsonPath} to git staging area.`);
+
+  const commitResult = await new Deno.Command("git", {
+    args: ["commit", "-m", `Update version to ${version}`],
+    stdout: "piped",
+    stderr: "piped",
+  }).spawn().output();
+
+  if (commitResult.code !== 0) {
+    const commitError = new TextDecoder().decode(commitResult.stderr);
+    console.error(`Committing changes failed:\n${commitError}`);
+    Deno.exit(1);
+  }
+}
 
 console.log(`Creating tag 'v${version}' for package '${packageName}' ...`);
 const tagName = `${packageName}@v${version}`;
