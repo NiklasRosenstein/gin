@@ -1,4 +1,4 @@
-import { type Gin, type KubernetesObject, makeOriginLabels, type ResourceAdapter } from "@gin/core";
+import type { Gin, KubernetesObject, ResourceAdapter } from "@gin/core";
 
 export interface WebApp extends KubernetesObject {
   apiVersion: "webapp.gin.jsr.io/v1alpha1";
@@ -110,6 +110,9 @@ export interface WebApp extends KubernetesObject {
 
 export class WebAppConverter implements ResourceAdapter<WebApp> {
   validate(_gin: Gin, resource: WebApp): Promise<void> {
+    if (!resource.metadata.namespace) {
+      throw new Error("WebApp metadata.namespace is required");
+    }
     if (resource.spec.replicas && resource.spec.replicas < 1) {
       throw new Error("WebApp spec.replicas must be at least 1");
     }
@@ -117,8 +120,7 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
   }
   generate(_gin: Gin, resource: WebApp): Promise<KubernetesObject[]> {
     const selectorLabels = {
-      "app.kubernetes.io/name": resource.metadata.name,
-      ...makeOriginLabels(resource),
+      "webapps.webapp.gin.jsr.io/v1alpha1": resource.metadata.name,
     };
 
     const deployment: KubernetesObject = {
@@ -127,7 +129,6 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
       metadata: {
         name: resource.metadata.name,
         namespace: resource.metadata.namespace,
-        labels: selectorLabels,
       },
       spec: {
         replicas: resource.spec.replicas ?? 1,
@@ -180,7 +181,6 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
       metadata: {
         name: resource.metadata.name,
         namespace: resource.metadata.namespace,
-        labels: selectorLabels,
         annotations: resource.spec.serviceAnnotations,
       },
       spec: {
@@ -209,7 +209,6 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
       metadata: {
         name: resource.metadata.name,
         namespace: resource.metadata.namespace,
-        labels: selectorLabels,
         annotations: {
           ...resource.spec.ingressAnnotations,
           ...(resource.spec.clusterIssuer ? { "cert-manager.io/cluster-issuer": resource.spec.clusterIssuer } : {}),
