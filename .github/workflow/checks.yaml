@@ -1,12 +1,13 @@
-name: Publish to JSR
+name: Checks
 
 on:
   push:
-    tags:
-      - "*@v*"
+    branches:
+      - main
+  pull_request:
 
 jobs:
-  publish:
+  checks:
     runs-on: ubuntu-latest
 
     permissions:
@@ -26,5 +27,11 @@ jobs:
       - name: Format
         run: deno fmt --check
 
-      - name: Publish to JSR
-        run: deno run --allow-read --allow-run ./scripts/picky-publisher.ts ${{ github.ref_name }}
+      - name: Lint
+        run: deno lint
+
+      - name: Check
+        run: deno check
+
+      - name: Test
+        run: deno test

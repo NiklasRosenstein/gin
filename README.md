@@ -3,9 +3,9 @@
 [sec]: https://docs.deno.com/runtime/fundamentals/security/
 [@gin]: https://jsr.io/@gin
 
-Gin is a templating engine for Kubernetes. It leverages TypeScript's type system to provide a strongly typed
-interface for defining Kubernetes resources, as well as [Deno's security model][sec] to ensure secure execution
-and TypeScript packages for reusability.
+Gin is a templating engine for Kubernetes. It leverages TypeScript's type system to provide a strongly typed interface
+for defining Kubernetes resources, as well as [Deno's security model][sec] to ensure secure execution and TypeScript
+packages for reusability.
 
 ## Features
 
@@ -27,8 +27,8 @@ while exposing a minimal configuration surface to developers.
 
 ## Basic Usage
 
-A Gin project is basically just a TypeScript file that uses the `@gin/core` package plus any additional packages
-that provide reusable components. Here's a simple example of how to deploy a simple web application using Gin's
+A Gin project is basically just a TypeScript file that uses the `@gin/core` package plus any additional packages that
+provide reusable components. Here's a simple example of how to deploy a simple web application using Gin's
 `@gin/webapp-v1alpha1` package:
 
 ```ts
@@ -58,4 +58,3 @@ This code produces a `Deployment`, `Service` and `Ingress` resource including a 
 annotation, all defined in a strongly typed way. Simply run
 
     $ deno run webapp.ts
-  
