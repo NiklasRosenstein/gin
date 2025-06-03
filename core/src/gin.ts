@@ -17,7 +17,7 @@ interface PackageMapping {
 
   /**
    * A template string to generate the actual package name from the captured groups.
-   * Example: `@gin/{name}-{version}`
+   * Example: `jsr:@gin/{name}-{version}`
    */
   packageFormat: string;
 }
@@ -38,7 +38,7 @@ export class Gin {
 
   // A mapping of regular expressions that capture two groups for the name and version of a Gin-style package
   // as well as a template string to generate the actual package name. The default package mapping is
-  // `{name}.gin.jsr.io/{version}` to `@gin/{name}-{version}`.
+  // `{name}.gin.jsr.io/{version}` to `jsr:@gin/{name}-{version}`.
   private packageMappings: PackageMapping[] = [];
 
   // Pending package import promises.
@@ -55,7 +55,7 @@ export class Gin {
 
   constructor() {
     this.withModule(this.module);
-    this.withPackageMapping("{name}.gin.jsr.io/{version}", "@gin/{name}-{version}");
+    this.withPackageMapping("{name}.gin.jsr.io/{version}", "jsr:@gin/{name}-{version}");
   }
 
   /**

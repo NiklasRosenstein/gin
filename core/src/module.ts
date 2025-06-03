@@ -7,7 +7,7 @@ import type { Gin } from "./gin.ts";
  * Currently it can only be used to register {@link ResourceAdapter}s for a specific API version and kind.
  *
  * Modules are usually loaded by a {@link Gin} instance when recognizing a familar API version, such as any of the
- * form `{name}.gin.jsr.io/{version}` which is mapped to and used to import from a package `@gin/{name}-{version}`.
+ * form `{name}.gin.jsr.io/{version}` which is mapped to and used to import from a package `jsr:@gin/{name}-{version}`.
  * Such packages are expected to export a `Module` instance that supplies a {@link ResourceAdapter} that can handle
  * the encountered API version and kind.
  */
