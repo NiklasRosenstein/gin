@@ -57,4 +57,18 @@ new Gin().run((gin) => {
 This code produces a `Deployment`, `Service` and `Ingress` resource including a `cert-manager.io/cluster-issuer`
 annotation, all defined in a strongly typed way. Simply run
 
-    $ deno run webapp.ts
+```console
+$ deno run webapp.ts
+```
+
+## Release Process
+
+Each package in this repository is independently versioned and released. To release a new version, ensure that its
+`version` field in `deno.json` is updated and then create and push a tag in the format `{pkg}@v{version}`. If something
+goes wrong during the publish step, the tag can be moved to a new commit and the release can be retried.
+
+The release script does all these steps for you.
+
+```console
+$ deno run --allow-all ./scripts/release.ts {pkg}@v{version}
+```
