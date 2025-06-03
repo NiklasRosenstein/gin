@@ -87,6 +87,24 @@ export interface WebApp extends KubernetesObject {
      * `clusterIssuer` or `issuer` is set, the Ingress will not use TLS.
      */
     tlsSecretName?: string;
+
+    /**
+     * Optional name of the node on which the WebApp should be scheduled on.
+     */
+    nodeName?: string;
+
+    /**
+     * Optional node selector to use for scheduling the WebApp pods.
+     */
+    nodeSelector?: Record<string, string>;
+
+    /**
+     * Optional resources to apply to the WebApp container.
+     */
+    resources?: {
+      limits?: Record<string, string>;
+      requests?: Record<string, string>;
+    };
   };
 }
 
@@ -146,8 +164,11 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
                   runAsNonRoot: !resource.spec.allowRunAsRoot,
                   runAsUser: resource.spec.allowRunAsRoot ? undefined : 1000, // Non-root user
                 },
+                resources: resource.spec.resources,
               },
             ],
+            nodeName: resource.spec.nodeName,
+            nodeSelector: resource.spec.nodeSelector,
           },
         },
       },
