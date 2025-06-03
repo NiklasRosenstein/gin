@@ -2,7 +2,8 @@
   "name": "@gin/core",
   "version": "0.1.7",
   "exports": {
-    ".": "./src/mod.ts"
+    ".": "./src/mod.ts",
+    "./util": "./src/util.ts"
   },
   "license": "MIT",
   "imports": {

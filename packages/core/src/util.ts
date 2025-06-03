@@ -75,3 +75,19 @@ export function getCallerFileAndLine(depth: number = 1): string {
   const line = trace.items[depth + 1]?.line || "??";
   return `${file}:${line}`;
 }
+
+/**
+ * Recursively drop keys from the object that have value `undefined`.
+ */
+export function dropUndefined<T extends unknown>(obj: T): T {
+  if (Array.isArray(obj)) {
+    return obj.map(dropUndefined) as T;
+  } else if (obj && typeof obj === "object") {
+    return Object.fromEntries(
+      Object.entries(obj)
+        .filter(([_, v]) => v !== undefined)
+        .map(([k, v]) => [k, dropUndefined(v)]),
+    ) as T;
+  }
+  return obj;
+}
