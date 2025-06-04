@@ -1,0 +1,13 @@
+{
+  "name": "@gin/sops",
+  "version": "0.1.0",
+  "exports": "./mod.ts",
+  "tasks": {
+    "dev": "deno test --watch"
+  },
+  "license": "MIT",
+  "imports": {
+    "@gin/core": "jsr:@gin/core@^0.1.11",
+    "jsonpath-plus": "npm:jsonpath-plus@^10.3.0"
+  }
+}

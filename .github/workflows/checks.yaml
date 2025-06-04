@@ -25,4 +25,4 @@ jobs:
           cache: true
 
       - name: Check All
-        run: deno task all-check
+        run: deno task all
