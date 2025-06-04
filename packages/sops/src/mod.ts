@@ -64,7 +64,8 @@ export class Sops implements SecretProvider {
         this.dataPromise = undefined;
       });
       this.data = undefined;
-    } else {
+    }
+    else {
       this.dataPromise = undefined;
       this.data = SecretValue.of(data);
     }
@@ -95,7 +96,8 @@ export class Sops implements SecretProvider {
     const result = await this.resolve(name);
     if (name.includes("[*]")) {
       return SecretValue.of(result as Array<unknown>);
-    } else if (result.length !== 1) {
+    }
+    else if (result.length !== 1) {
       throw new Error(
         `Failed to resolve "array" secret "${name}", expected a single value, got ${result.length} values.`,
       );

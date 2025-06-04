@@ -111,9 +111,11 @@ export class Gin {
         if (!(module instanceof Module)) {
           throw new Error(`Package '${packageName}' default export is a function, but it did not return a Module.`);
         }
-      } else if (pkg.default instanceof Module) {
+      }
+      else if (pkg.default instanceof Module) {
         module = pkg.default;
-      } else {
+      }
+      else {
         throw new Error(`Package '${packageName}' does not default-export a Module or function.`);
       }
 
@@ -123,7 +125,8 @@ export class Gin {
       .catch((error) => {
         if (optional) {
           this.warnings.push(`Attempted to load package '${packageName}', but it failed: ${error.message}`);
-        } else {
+        }
+        else {
           throw error;
         }
       });
@@ -366,10 +369,12 @@ export class Gin {
 
     try {
       await callback(this);
-    } catch (error) {
+    }
+    catch (error) {
       console.error("Error during Gin pipeline execution:", error);
       throw error;
-    } finally {
+    }
+    finally {
       this.sink.close();
 
       // Wait for all pending emits to complete

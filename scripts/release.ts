@@ -64,7 +64,8 @@ async function getDenoJsonVersion(pkg: string): Promise<string> {
     const denoJson: { version?: string } = JSON.parse(await Deno.readTextFile(denoJsonPath));
     assert(denoJson.version, `Version not found in ${denoJsonPath}`);
     return denoJson.version;
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`Failed to read or parse ${denoJsonPath}:`, error);
     Deno.exit(1);
   }
@@ -100,12 +101,15 @@ async function main() {
   for (const arg of Deno.args) {
     if (arg == "--force" || arg == "-f") {
       args.force = true;
-    } else if (arg == "--no-dry") {
+    }
+    else if (arg == "--no-dry") {
       args.dry = false;
-    } else if (arg.startsWith("-")) {
+    }
+    else if (arg.startsWith("-")) {
       console.error(`Unknown argument: ${arg}`);
       usageAndExit();
-    } else {
+    }
+    else {
       args.pkgs.push(arg);
     }
   }

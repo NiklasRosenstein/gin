@@ -93,12 +93,15 @@ export class HelmChartAdapter implements ResourceAdapter<UntypedHelmChart> {
     let repoArg: string[] = [];
     if (repository.startsWith("oci://")) {
       chartPath = `${repository}/${chart}`;
-    } else if (repository.startsWith("file://")) {
+    }
+    else if (repository.startsWith("file://")) {
       chartPath = repository.replace("file://", "") + `/${chart}`;
-    } else if (repository.startsWith("https://") || repository.startsWith("http://")) {
+    }
+    else if (repository.startsWith("https://") || repository.startsWith("http://")) {
       chartPath = chart;
       repoArg = ["--repo", String(repository)];
-    } else if (repository.startsWith("git+")) {
+    }
+    else if (repository.startsWith("git+")) {
       const repoUrl = parseRepoUrl(repository);
       assert(repoUrl instanceof GitUrl, "Expected GitUrl instance");
 
@@ -119,7 +122,8 @@ export class HelmChartAdapter implements ResourceAdapter<UntypedHelmChart> {
       });
 
       chartPath = join(checkoutPath, repoUrl.path || ".", chart);
-    } else {
+    }
+    else {
       throw new Error(`Unsupported repository protocol: ${repository}`);
     }
 

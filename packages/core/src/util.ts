@@ -84,7 +84,8 @@ export function dropUndefined<T>(obj: T): T;
 export function dropUndefined<T extends unknown>(obj: T): T {
   if (Array.isArray(obj)) {
     return obj.filter((x) => x !== undefined).map(dropUndefined) as T;
-  } else if (obj && typeof obj === "object") {
+  }
+  else if (obj && typeof obj === "object") {
     return Object.fromEntries(
       Object.entries(obj)
         .filter(([_, v]) => v !== undefined)
@@ -104,7 +105,8 @@ export async function createManagedTempDir(prefix: string): Promise<string> {
     try {
       // NOTE: If we use the async variant, not all file will be removed before the process exits.
       Deno.removeSync(dir, { recursive: true });
-    } catch (e) {
+    }
+    catch (e) {
       console.warn(`Failed to remove temporary directory ${dir}:`, e);
     }
   });
@@ -145,14 +147,16 @@ export function replaceValues<T>(
 ): T {
   if (Array.isArray(obj)) {
     return obj.map((item) => replaceValues(item, mappingFn)) as unknown as T;
-  } else if (obj && typeof obj === "object") {
+  }
+  else if (obj && typeof obj === "object") {
     const newObj = {} as Record<string, unknown>;
     Object.setPrototypeOf(newObj, Object.getPrototypeOf(obj));
     for (const [key, value] of Object.entries(obj)) {
       newObj[key] = replaceValues(value, mappingFn);
     }
     return newObj as T;
-  } else {
+  }
+  else {
     return mappingFn(obj) as T;
   }
 }

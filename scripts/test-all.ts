@@ -27,7 +27,8 @@ for (const pkg of packages) {
   let args: string[];
   if ("test-this" in tasks) {
     args = ["task", "test-this"];
-  } else {
+  }
+  else {
     args = ["test"];
   }
 

@@ -218,7 +218,8 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
     let tlsSecretName: string | undefined;
     if (!resource.spec.tlsSecretName && (resource.spec.clusterIssuer || resource.spec.issuer)) {
       tlsSecretName = `${resource.metadata.name}-tls`;
-    } else {
+    }
+    else {
       tlsSecretName = resource.spec.tlsSecretName;
     }
 

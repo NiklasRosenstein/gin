@@ -7,7 +7,8 @@
     "noUncheckedIndexedAccess": true
   },
   "fmt": {
-    "lineWidth": 120
+    "lineWidth": 120,
+    "nextControlFlowPosition": "nextLine"
   },
   "workspace": [
     "./packages/*"
