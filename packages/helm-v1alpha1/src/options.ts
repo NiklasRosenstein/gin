@@ -1,7 +1,7 @@
 import type { ModuleOptions } from "@gin/core";
 
 export interface HelmOptions extends ModuleOptions {
-  type: "@gin/helm-v1alpha1";
+  pkg: "@gin/helm-v1alpha1";
 
   /**
    * The directory where Helm charts and Git repositories will be cached. It is strongly recommended to specify a
