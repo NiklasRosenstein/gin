@@ -179,6 +179,8 @@
       "packages/core": {
         "dependencies": [
           "jsr:@std/cli@^1.0.19",
+          "jsr:@std/crypto@^1.0.5",
+          "jsr:@std/encoding@^1.0.10",
           "jsr:@std/regexp@^1.0.1",
           "jsr:@std/yaml@^1.0.7",
           "npm:stacktracey@^2.1.8"
