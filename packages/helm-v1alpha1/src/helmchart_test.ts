@@ -7,6 +7,7 @@ import { createManagedTempDir } from "@gin/core/util";
 const TESTDATA_DIR = join(dirname(dirname(import.meta.filename!)), "testdata");
 
 async function createAdapter(): Promise<HelmChartAdapter> {
+  // Using a temporary directory will avoid conflicts with other tests that might run in parallel.
   return new HelmChartAdapter(await createManagedTempDir("gin-helmchart-v1alpha1-test-"));
 }
 

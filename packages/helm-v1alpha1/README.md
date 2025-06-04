@@ -36,6 +36,31 @@ new Gin().run((gin) => {
 You can use the `UntypedHelmChart` type instead if you can't or don't want to spell out the interface for the Helm chart
 values.
 
+## Options
+
+This Gin package exports a Gin module factory that expects options. These options are optional, but it is recommended to
+consider configuring the options to suit your needs.
+
+```ts
+import { Gein } from "jsr:@gin/gin";
+import { HelmOptions } from "jsr:@gin/helm-v1alpha1";
+
+new Gin()
+  .withOptions<HelmOptions>({
+    type: "@gin/helm-v1alpha1",
+    cacheDir: "path/to/cache/dir",
+  })
+  .run(async (gin) => {
+    // ...
+  });
+```
+
+Available options are:
+
+| Option     | Type     | Default     | Description                                                                                        |
+| ---------- | -------- | ----------- | -------------------------------------------------------------------------------------------------- |
+| `cacheDir` | `string` | `.gin/helm` | The directory where the Helm charts will be cached. This is useful for reusing charts across runs. |
+
 ## Supported Chart Repositories
 
 The following chart repository protocols are supported:
