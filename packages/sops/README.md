@@ -10,7 +10,7 @@ have it installed your system.
 import { SecretValue } from "@gin/core";
 import { Sops } from "@gin/sops";
 const sops = new Sops({ path: `${import.meta.dirname}/sops.yaml` });
-const secretKey: SecretValue<String> = sops.getString("credentials.secretKey");
+const secretKey: SecretValue<string> = sops.getString("credentials.secretKey");
 ```
 
 Your environment must be set up for the `sops` command to work and be able to decrypt the SOPS file. This typically
