@@ -1,6 +1,6 @@
-This package implements the `SecretProvider` API from the `@gin/core` package for a SOPS file. All values are returned
-as `SecretValue` objects from the `@gin/core` package. This package wraps the `sops` command-line tool, so you need to
-have it installed your system.
+This package provides a `SecretProvider` implementation for SOPS files, using the `@gin/core` API. All secrets are
+returned as `SecretValue` objects from `@gin/core`. It relies on the `sops` command-line tool, which must be installed
+on your system.
 
 ## Usage
 
@@ -11,17 +11,11 @@ const sops = new Sops({ path: `${import.meta.dirname}/sops.yaml` });
 const secretKey: SecretValue<string> = await sops.getString("credentials.secretKey");
 ```
 
-Your environment must be set up for the `sops` command to work and be able to decrypt the SOPS file. This typically
-means setting up the necessary keys in your environment, such as `SOPS_AGE_KEY`. See https://getsops.io/ for more
-information.
+Ensure your environment is configured so the `sops` command can decrypt your SOPS file. This usually involves setting up
+the appropriate keys, such as `SOPS_AGE_KEY`. For more details, see the [SOPS documentation](https://getsops.io/).
 
 ## Deno Permissions
 
-| Permission         | Rationale                                                                        |
-| ------------------ | -------------------------------------------------------------------------------- |
-| `--allow-run=sops` | This package uses the `sops` command-line tool to read secrets from a SOPS file. |
-
-## Extras
-
-This package contains a `sops.schema.json` that can be added to your `.sops.yaml` files to enable schema validation in
-your editor. For your convenience, it's available
+| Permission         | Reason                                                                            |
+| ------------------ | --------------------------------------------------------------------------------- |
+| `--allow-run=sops` | Required to invoke the `sops` CLI for reading secrets from a SOPS-encrypted file. |
