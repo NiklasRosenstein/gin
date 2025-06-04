@@ -101,13 +101,13 @@ export class Gin {
    * @return The Gin instance itself, allowing for method chaining.
    */
   withPackage(packageName: string, optional: boolean = false): Gin {
-    const promise = import(packageName).then((pkg) => {
+    const promise = import(packageName).then(async (pkg) => {
       let module: Module | undefined = undefined;
 
       // If a function is exported, it is one that produces a module given options.
       if (typeof pkg.default === "function") {
         const options = this.options.get(pkg.default.name);
-        module = pkg.default(options);
+        module = await pkg.default(options);
         if (!(module instanceof Module)) {
           throw new Error(`Package '${packageName}' default export is a function, but it did not return a Module.`);
         }
