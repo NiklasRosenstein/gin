@@ -16,6 +16,26 @@
     "@std/assert": "jsr:@std/assert@^1.0.13"
   },
   "tasks": {
-    "all": "deno fmt && deno lint --fix && deno check && deno test --no-check"
+    "test": " bash -c 'cd packages && for pkg in *; do (cd \"$pkg\" && echo Test package $pkg; deno task test); done'",
+    "lint": "deno lint --fix",
+    "fmt": "deno fmt",
+    "fmt-check": "deno fmt --check",
+    "check": "deno check",
+    "all": {
+      "command": "deno task test",
+      "dependencies": [
+        "lint",
+        "fmt",
+        "check"
+      ]
+    },
+    "all-check": {
+      "command": "deno task test",
+      "dependencies": [
+        "lint",
+        "fmt-check",
+        "check"
+      ]
+    }
   }
 }

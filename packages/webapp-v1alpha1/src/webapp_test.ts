@@ -24,7 +24,7 @@ function createWebApp(overrides: Partial<WebApp> = {}): WebApp {
 
 Deno.test("WebAppConverter - should throw error when namespace is missing", async () => {
   const converter = new WebAppConverter();
-  const gin = new Gin();
+  const gin = new Gin("bare");
 
   const webapp = createWebApp({ metadata: { name: "test-webapp" } });
   delete webapp.metadata.namespace;
@@ -38,7 +38,7 @@ Deno.test("WebAppConverter - should throw error when namespace is missing", asyn
 
 Deno.test("WebAppConverter - should throw error when replicas is less than 1", async () => {
   const converter = new WebAppConverter();
-  const gin = new Gin();
+  const gin = new Gin("bare");
 
   const webapp = createWebApp({ spec: { image: "nginx:latest", hostname: "example.com", replicas: 0 } });
 
@@ -51,7 +51,7 @@ Deno.test("WebAppConverter - should throw error when replicas is less than 1", a
 
 Deno.test("WebAppConverter - should pass validation with valid WebApp", async () => {
   const converter = new WebAppConverter();
-  const gin = new Gin();
+  const gin = new Gin("bare");
 
   const webapp = createWebApp();
 
@@ -61,7 +61,7 @@ Deno.test("WebAppConverter - should pass validation with valid WebApp", async ()
 
 Deno.test("WebAppConverter - should generate deployment, service, and ingress", async () => {
   const converter = new WebAppConverter();
-  const gin = new Gin();
+  const gin = new Gin("bare");
 
   const webapp = createWebApp({
     metadata: { name: "example-webapp", namespace: "default" },
@@ -87,7 +87,7 @@ Deno.test("WebAppConverter - should generate deployment, service, and ingress", 
 
 Deno.test("WebAppConverter - should generate deployment with correct configuration", async () => {
   const converter = new WebAppConverter();
-  const gin = new Gin();
+  const gin = new Gin("bare");
 
   const webapp = createWebApp({
     metadata: { name: "example-webapp", namespace: "default" },

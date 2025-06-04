@@ -2,7 +2,7 @@
  * This file provides the main entrypoint for a Gin pipeline to render Kubernetes manifests.
  */
 
-import { Module, type ResourceAdapter } from "./module.ts";
+import { Module, type ModuleOptions, type ResourceAdapter } from "./module.ts";
 import { escape } from "@std/regexp/escape";
 import { type Sink, StdoutSink as YamlStdoutSink } from "./sink.ts";
 import { type KubernetesObject, ResourceLocator } from "./types.ts";
@@ -38,6 +38,9 @@ export class Gin {
   // A list of modules that have been loaded.
   private modules: Module[] = [];
 
+  // A mapping of package names to their corresponding options.
+  private options: Map<string, ModuleOptions> = new Map();
+
   // A mapping of regular expressions that capture two groups for the name and version of a Gin-style package
   // as well as a template string to generate the actual package name. The default package mapping is
   // `{name}.gin.jsr.io/{version}` to `jsr:@gin/{name}-{version}`.
@@ -59,15 +62,20 @@ export class Gin {
   // Warnings collected while processing resources.
   private warnings: string[] = [];
 
-  constructor() {
-    this.withModule(this.module);
-    this.withPackageMapping("{name}.gin.jsr.io/{version}", "jsr:@gin/{name}-{version}");
+  constructor(mode: "default" | "bare" = "default") {
+    if (mode == "default") {
+      this.withModule(this.module);
+      this.withPackageMapping("{name}.gin.jsr.io/{version}", "jsr:@gin/{name}-{version}");
+    }
   }
 
   /**
    * Add a package mapping to the Gin instance. This allows it to resolve API versions of the specified format to
    * corresponding Gin packages which means you are not limited to the default mapping to packages in the `@gin/`
    * scope.
+   *
+   * Note that some modules may have required options that need to be configured. For this, you want to use the
+   * `withOptions()` method of the Gin instance.
    *
    * @param apiVersionFormat - A string that defines the format of the API version, which should contain the two
    *    placeholders `{name}` and `{version}`.
@@ -93,12 +101,24 @@ export class Gin {
    * @return The Gin instance itself, allowing for method chaining.
    */
   withPackage(packageName: string, optional: boolean = false): Gin {
-    const promise = import(packageName).then((pkg) => {
-      if (!(pkg.default instanceof Module)) {
-        throw new Error(`Package '${packageName}' does not default-export a Module.`);
+    const promise = import(packageName).then(async (pkg) => {
+      let module: Module | undefined = undefined;
+
+      // If a function is exported, it is one that produces a module given options.
+      if (typeof pkg.default === "function") {
+        const options = this.options.get(pkg.default.name);
+        module = await pkg.default(options);
+        if (!(module instanceof Module)) {
+          throw new Error(`Package '${packageName}' default export is a function, but it did not return a Module.`);
+        }
+      } else if (pkg.default instanceof Module) {
+        module = pkg.default;
+      } else {
+        throw new Error(`Package '${packageName}' does not default-export a Module or function.`);
       }
+
       console.trace(`Adding package: '${packageName}'`);
-      this.modules.push(pkg.default);
+      this.modules.push(module!);
     })
       .catch((error) => {
         if (optional) {
@@ -108,6 +128,18 @@ export class Gin {
         }
       });
     this.pendingPackages.push(promise);
+    return this;
+  }
+
+  /**
+   * Setup options for when a module is loaded from a package.
+   */
+  withOptions<T extends ModuleOptions>(options: Pick<T, "type"> & Partial<T>): Gin {
+    if (!options.type) {
+      throw new Error("Module options must have a 'type' field.");
+    }
+    console.trace(`Adding options for module type '${options.type}':`, options);
+    this.options.set(options.type, options as T);
     return this;
   }
 
@@ -194,7 +226,6 @@ export class Gin {
    */
   async processOnce<T extends KubernetesObject>(resource: T): Promise<KubernetesObject[]> {
     resource.gin = resource.gin || {};
-    resource.gin.children = [];
 
     // Find a matching adapter for the resource.
     const adapter = await this.findAdapter(resource);
@@ -203,17 +234,26 @@ export class Gin {
       // let the user know that they could be missing it.
       const packageName = this.resolvePackageNameFromApiVersion(resource.apiVersion);
       if (packageName) {
-        this.warnings.push(
-          `No adapter found for resource of kind '${resource.kind}' with API version ` +
-            `'${resource.apiVersion}, despite mapping to package '${packageName}'.`,
-        );
+        // TODO: Instead of issueing a global warning, get it from the warnings on the emitted resources?
+        const message = `No adapter found for resource of kind '${resource.kind}' with API version ` +
+          `'${resource.apiVersion}, despite mapping to package '${packageName}'.`;
+        this.warnings.push(message);
+        resource.gin = resource.gin || {};
+        resource.gin.notes = resource.gin.notes || [];
+        resource.gin.notes.push({ kind: "Warning", message });
       }
 
       return [resource]; // No adapter found, return the resource as is
     }
 
+    resource.gin.children = [];
     await adapter.validate(this, resource);
     return (await adapter.generate(this, resource)).map((res) => {
+      // If the adapter returns its own resource object, we don't update the parent field.
+      if (res === resource) {
+        return resource;
+      }
+
       res.gin = res.gin || {};
       res.gin.parent = ResourceLocator.of(resource);
       resource.gin?.children?.push(ResourceLocator.of(res));

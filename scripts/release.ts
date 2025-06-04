@@ -4,74 +4,128 @@
  * it to the remote repository.
  */
 
-const [packageName, version] = Deno.args[0]!.split("@v");
-if (!packageName || !version) {
-  console.error("Usage: deno run scripts/picky-publisher.ts <packageName>@v<version>");
+import * as semver from "jsr:@std/semver@^1.0.0";
+import { run } from "../packages/helm-v1alpha1/src/git.ts";
+
+function usageAndExit(): never {
+  console.error(
+    "Usage: deno run scripts/release.ts [<pkg>@v<version> | <pkg> <version | 'major' | 'minor' | 'patch'>",
+  );
   Deno.exit(1);
 }
 
-const tagName = `${packageName}@v${version}`;
-const force = Deno.args.includes("--force") || Deno.args.includes("-f");
-
-const denoJsonPath = `packages/${packageName}/deno.json`;
-const denoJson = JSON.parse(Deno.readTextFileSync(denoJsonPath));
-if (denoJson.version !== version) {
-  denoJson.version = version;
-  Deno.writeTextFileSync(denoJsonPath, JSON.stringify(denoJson, null, 2));
-
-  console.log(`Updated version in ${denoJsonPath} to ${version}`);
-
-  // Make sure we run one last check.
-  const checksResult = await new Deno.Command("deno", {
-    args: ["run", "checks"],
-  }).spawn().output();
-
-  if (checksResult.code !== 0) {
-    console.error(`Checks failed`);
+async function getLatestVersion(pkg: string): Promise<semver.SemVer | undefined> {
+  const tags = await run(["git", "tag", "--list", `${pkg}@v*`], { check: true, stdout: "piped" });
+  if (tags.code !== 0) {
+    console.error("Failed to list Git tags.");
     Deno.exit(1);
   }
+  const tagList = new TextDecoder().decode(tags.stdout).trim().split("\n");
+  return tagList
+    .map((tag) => tag.replace(`${pkg}@v`, ""))
+    .map(semver.parse)
+    .sort(semver.compare)
+    .pop();
+}
 
-  const addResult = await new Deno.Command("git", {
-    args: ["add", denoJsonPath],
-  }).spawn().output();
+const versionBumps = {
+  "major": (semver: semver.SemVer): semver.SemVer => {
+    semver.major++;
+    semver.minor = 0;
+    semver.patch = 0;
+    return semver;
+  },
+  "minor": (semver: semver.SemVer): semver.SemVer => {
+    semver.minor++;
+    semver.patch = 0;
+    return semver;
+  },
+  "patch": (semver: semver.SemVer): semver.SemVer => {
+    semver.patch++;
+    return semver;
+  },
+};
 
-  if (addResult.code !== 0) {
-    console.error(`Adding file to git failed`);
-    Deno.exit(1);
+async function gitAdd(filePaths: string[]) {
+  console.trace("gitAdd", filePaths);
+  await run(["git", "add", ...filePaths], { check: true });
+}
+
+async function gitCommit(message: string) {
+  await run(["git", "commit", "-m", message], { check: true });
+}
+
+async function gitTag(tagName: string, force: boolean) {
+  const args = ["git", "tag", tagName, "-m", `Release ${tagName}`];
+  if (force) {
+    args.push("-f");
+  }
+  await run(args, { check: true });
+}
+
+async function gitPush(tagName: string, force: boolean) {
+  const args = ["git", "push", "origin", tagName];
+  if (force) {
+    args.push("--force");
+  }
+  await run(args, { check: true });
+}
+
+async function updateDenoJson(pkg: string, version: string, dry: boolean): Promise<[string, boolean]> {
+  const denoJsonPath = `packages/${pkg}/deno.json`;
+  const denoJson = JSON.parse(Deno.readTextFileSync(denoJsonPath));
+  if (denoJson.version !== version) {
+    denoJson.version = version;
+    if (!dry) {
+      await Deno.writeTextFile(denoJsonPath, JSON.stringify(denoJson, null, 2) + "\n");
+    }
+    console.log(`Updated version in ${denoJsonPath} to ${version}`);
+    return [denoJson, true];
+  }
+  return [denoJson, false];
+}
+
+async function main() {
+  const dry = !Deno.args.includes("--no-dry");
+  if (dry) {
+    console.log("Running in dry mode. No changes will be made.");
   }
 
-  console.log(`Added ${denoJsonPath} to git staging area.`);
-
-  const commitResult = await new Deno.Command("git", {
-    args: ["commit", "-m", `Update version for ${packageName} to v${version}`],
-  }).spawn().output();
-
-  if (commitResult.code !== 0) {
-    console.error(`Committing changes failed`);
-    Deno.exit(1);
+  const force = Deno.args.includes("--force") || Deno.args.includes("-f");
+  let [pkg, version] = Deno.args[0]!.split("@v");
+  if (!pkg) {
+    usageAndExit();
   }
+
+  version = version || Deno.args[1];
+  if (!version) {
+    usageAndExit();
+  }
+
+  if (version in versionBumps) {
+    const latestVersion = await getLatestVersion(pkg);
+    if (!latestVersion) {
+      console.error(`No previous version found for package ${pkg}.`);
+      Deno.exit(1);
+    }
+    version = semver.format(versionBumps[version as keyof typeof versionBumps](latestVersion));
+    console.log(`Latest version of ${pkg} is ${semver.format(latestVersion)}, bumping to ${version}.`);
+  }
+
+  const tagName = `${pkg}@v${version}`;
+  const [denoJson, modified] = await updateDenoJson(pkg, version, dry);
+  if (!dry) {
+    if (modified) {
+      await gitAdd([denoJson]);
+      await gitCommit(`Update version of ${pkg} to ${version}`);
+    }
+    await gitTag(tagName, force);
+    await gitPush(tagName, force);
+  }
+
+  console.log(
+    `Successfully updated version of package '${pkg}' to ${version} and pushed tag '${tagName}' to remote repository.`,
+  );
 }
 
-console.log(`Creating tag 'v${version}' for package '${packageName}' ...`);
-const tagResult = await new Deno.Command("git", {
-  args: ["tag", tagName, ...(force ? ["-f"] : []), "-m", `Release ${tagName}`],
-}).spawn().output();
-
-if (tagResult.code !== 0) {
-  console.error(`Tagging failed`);
-  Deno.exit(1);
-}
-
-console.log(`Pushing tag '${tagName}' to remote repository ...`);
-const pushResult = await new Deno.Command("git", {
-  args: ["push", "origin", tagName, ...(force ? ["--force"] : [])],
-}).spawn().output();
-
-if (pushResult.code !== 0) {
-  console.error(`Pushing tag failed`);
-  Deno.exit(1);
-}
-
-console.log(
-  `Successfully updated version of package '${packageName}' to ${version} and pushed tag '${tagName}' to remote repository.`,
-);
+await main();
