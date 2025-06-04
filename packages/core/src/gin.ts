@@ -62,9 +62,11 @@ export class Gin {
   // Warnings collected while processing resources.
   private warnings: string[] = [];
 
-  constructor() {
-    this.withModule(this.module);
-    this.withPackageMapping("{name}.gin.jsr.io/{version}", "jsr:@gin/{name}-{version}");
+  constructor(mode: "default" | "bare" = "default") {
+    if (mode == "default") {
+      this.withModule(this.module);
+      this.withPackageMapping("{name}.gin.jsr.io/{version}", "jsr:@gin/{name}-{version}");
+    }
   }
 
   /**
