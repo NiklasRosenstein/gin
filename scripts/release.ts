@@ -23,7 +23,7 @@ async function getLatestVersion(pkg: string): Promise<semver.SemVer | undefined>
   const tagList = new TextDecoder().decode(tags.stdout).trim().split("\n");
   return tagList
     .map((tag) => tag.replace(`${pkg}@v`, ""))
-    .filter(tag => !!tag)
+    .filter((tag) => !!tag)
     .map(semver.parse)
     .sort(semver.compare)
     .pop();
@@ -52,8 +52,8 @@ async function gitAdd(filePaths: string[]) {
   await run(["git", "add", ...filePaths], { check: true });
 }
 
-async function gitCommit(message: string) {
-  await run(["git", "commit", "-m", message], { check: true });
+async function gitCommit(message: string, { allowEmpty }: { allowEmpty: boolean }) {
+  await run(["git", "commit", "-m", message, ...(allowEmpty ? ["--allow-empty"] : [])], { check: true });
 }
 
 async function gitTag(tagName: string, force: boolean) {
@@ -145,7 +145,7 @@ async function main() {
 
   console.log("Committing changes to Git...");
   if (!dry) {
-    await gitCommit(`Release ${releasesFormatted}`);
+    await gitCommit(`Release ${releasesFormatted}`, { allowEmpty: true });
   }
 
   const tagNames = args.pkgs.map((pkg) => `${pkg}@v${releasedVersions.get(pkg)}`);
