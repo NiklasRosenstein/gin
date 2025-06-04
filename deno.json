@@ -17,6 +17,7 @@
     "@std/assert": "jsr:@std/assert@^1.0.13"
   },
   "tasks": {
+    "release": "./scripts/release.ts",
     "test": "./scripts/test-all.ts",
     "lint": "deno lint --fix",
     "fmt": "deno fmt",
