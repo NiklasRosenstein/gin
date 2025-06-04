@@ -28,7 +28,7 @@ export interface WebApp extends KubernetesObject {
     /**
      * Additional hostnames or domains for the web application.
      */
-    extrahosts?: string[];
+    extraHosts?: string[];
 
     /**
      * Allow the application to run as root user. Defaults to false.
@@ -236,7 +236,7 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
       },
       spec: {
         ingressClassName: resource.spec.ingressClass ?? "nginx",
-        rules: [resource.spec.host, ...(resource.spec.extrahosts || [])].map((host) => ({
+        rules: [resource.spec.host, ...(resource.spec.extraHosts || [])].map((host) => ({
           host: host,
           http: {
             paths: [
@@ -257,7 +257,7 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
         })),
         tls: tlsSecretName
           ? [{
-            hosts: [resource.spec.host, ...(resource.spec.extrahosts || [])],
+            hosts: [resource.spec.host, ...(resource.spec.extraHosts || [])],
             secretName: tlsSecretName,
           }]
           : undefined,
