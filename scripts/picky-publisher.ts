@@ -28,6 +28,17 @@ if (lintResult.code !== 0) {
   Deno.exit(1);
 }
 
+console.log(`Checking formatting of package '${pkgPath}' ...`);
+const fmtResult = await new Deno.Command(Deno.execPath(), {
+  args: ["fmt", "--check"],
+  cwd: pkgPath,
+}).spawn().output();
+
+if (fmtResult.code !== 0) {
+  console.error(`Formatting check failed.`);
+  Deno.exit(1);
+}
+
 console.log(`Testing package '${pkgPath}' ...`);
 const testResult = await new Deno.Command(Deno.execPath(), {
   args: ["run", "--allow-all", "./scripts/test-all.ts", pkg],

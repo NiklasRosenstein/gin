@@ -23,8 +23,5 @@ jobs:
           deno-version: v2.x
           cache: true
 
-      - name: Format
-        run: deno fmt --check
-
       - name: Publish to JSR
         run: deno run --allow-read --allow-run ./scripts/picky-publisher.ts ${{ github.ref_name }}

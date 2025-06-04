@@ -57,7 +57,8 @@ independently versioned and released.
 
 ### Format, lint, check and test
 
-Before committing code, it's a good idea to run `deno task all`. It is a task in the workspace root that formats all code, runs linting with fixes where possible, runs type checks and then all tests.
+Before committing code, it's a good idea to run `deno task all`. It is a task in the workspace root that formats all
+code, runs linting with fixes where possible, runs type checks and then all tests.
 
 Packages that require special permissions for the Deno runtime must define a `test-this` task which runs `deno test`
 with the corresponding `--allow-*` flags. Packages that do not define this task are simply tested with `deno test`.
