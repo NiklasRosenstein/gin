@@ -2,6 +2,7 @@
  * Represents a secret value that should not be logged or printed in any way. This does not have anything to do with
  * Kubernetes secrets, it's just a canonical method in Gin to denote that a value is not to be revealed lightly.
  */
+
 export class SecretValue<T = string> {
   public secretValue: T;
 
@@ -11,6 +12,13 @@ export class SecretValue<T = string> {
 
   toString(): string {
     return "[SecretValue]";
+  }
+
+  /**
+   * Prevent the secret value from being logged or printed in any way, even with `console.log()`.
+   */
+  [Symbol.for("nodejs.util.inspect.custom")](): string {
+    return this.toString();
   }
 
   /**
