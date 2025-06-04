@@ -1,3 +1,7 @@
+/**
+ * This example demonstrates how to use the `@gin/webapp-v1alpha1` package to deploy a simple web application.
+ */
+
 import { Gin } from "@gin/core";
 import { WebApp } from "@gin/webapp-v1alpha1";
 
