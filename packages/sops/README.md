@@ -1,5 +1,3 @@
-# @gin/sops
-
 This package implements the `SecretProvider` API from the `@gin/core` package for a SOPS file. All values are returned
 as `SecretValue` objects from the `@gin/core` package. This package wraps the `sops` command-line tool, so you need to
 have it installed your system.

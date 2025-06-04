@@ -1,7 +1,5 @@
-# @gin/helm-v1alpha1
-
-This package provides a Gin custom resource for render Helm charts. It invokes the `helm pull` command to fetch the
-chart, then `helm template` to render the chart and return the resulting Kubernetes manifests to Gin.
+This package provides the `HelmChart` Gin custom resource for render Helm charts. It invokes the `helm pull` command to
+fetch the chart, then `helm template` to render the chart and return the resulting Kubernetes manifests to Gin.
 
 ## Usage
 
@@ -33,8 +31,9 @@ new Gin().run((gin) => {
 });
 ```
 
-You can use the `UntypedHelmChart` type instead if you can't or don't want to spell out the interface for the Helm chart
-values.
+> Defining an interface for the Helm chart values is optional, but it is recommended to ensure type safety and
+> autocompletion in your IDE. The `HelmChart` type is generic and expects an interface for the chart values. If you
+> don't define an interface, you can use `UntypedHelmChart` instead.
 
 ## Options
 

@@ -1,8 +1,8 @@
-# @gin/webapp-v1alpha1
+This package provides a `WebApp` Gin custom resource that is a simple abstraction for describing stateless Web
+applications that will unfold into a `Deployment`, `Service`, and `Ingress` resource, as well as a `Secret` if the
+`.spec.secretEnv` field is set.
 
 [cert-manager]: https://cert-manager.io/
-
-This package provides the `WebApp` resource that is a simple abstraction for describing stateless Web applications.
 
 ## Basic Example
 
