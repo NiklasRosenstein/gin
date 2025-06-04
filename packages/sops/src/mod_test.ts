@@ -55,4 +55,22 @@ Deno.test(async function testJsonPathInSopsGet() {
   );
 
   assertEquals(await sops.getArray("nestedArrayValue[*].key"), SecretValue.of(["value1", "value2"]));
+
+  await assertRejects(
+    () => sops.getString("dontExist"),
+    Error,
+    'Failed to resolve "string" secret "dontExist", expected a single value, got 0 values.',
+  );
+
+  await assertRejects(
+    () => sops.getArray("dontExist"),
+    Error,
+    'Failed to resolve "array" secret "dontExist", expected a single value, got 0 values.',
+  );
+
+  await assertRejects(
+    () => sops.getObject("dontExist"),
+    Error,
+    'Failed to resolve "object" secret "dontExist", expected a single value, got 0 values.',
+  );
 });

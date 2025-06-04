@@ -73,7 +73,6 @@ export class Sops implements SecretProvider {
   private async resolve(name: string): Promise<unknown[]> {
     await this.dataPromise;
     assert(this.data !== undefined, "SOPS data is expected to be available now.");
-    // TODO: Error handling?
     return JSONPath({ path: name, json: this.data.secretValue, resultType: "value" });
   }
 
