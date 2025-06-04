@@ -24,14 +24,5 @@ jobs:
           deno-version: v2.x
           cache: true
 
-      - name: Format
-        run: deno fmt --check
-
-      - name: Lint
-        run: deno lint
-
-      - name: Check
-        run: deno check
-
-      - name: Test
-        run: deno test
+      - name: Check All
+        run: deno task all-check

@@ -5,5 +5,8 @@
   "license": "MIT",
   "imports": {
     "@gin/core": "jsr:@gin/core@0.1"
+  },
+  "tasks": {
+    "test": "deno test"
   }
 }

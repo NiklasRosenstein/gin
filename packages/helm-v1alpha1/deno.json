@@ -15,5 +15,8 @@
     "@std/encoding": "jsr:@std/encoding@^1.0.10",
     "@std/path": "jsr:@std/path@^1.1.0",
     "@std/yaml": "jsr:@std/yaml@^1.0.7"
+  },
+  "tasks": {
+    "test": "deno test --allow-write --allow-run=helm,git"
   }
 }
