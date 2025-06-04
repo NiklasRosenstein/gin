@@ -1,5 +1,5 @@
 import { Gin } from "@gin/core";
-import { type HelmChart, HelmChartAdapter } from "./helmchart.ts";
+import { HelmChartAdapter, type UntypedHelmChart } from "./helmchart.ts";
 import { assertEquals, assertRejects } from "@std/assert";
 import { dirname, join } from "@std/path";
 import { createManagedTempDir } from "@gin/core/util";
@@ -12,7 +12,7 @@ async function createAdapter(): Promise<HelmChartAdapter> {
 
 // Note: requires --allow-run=helm and --allow-write
 Deno.test(async function testHelmChartFromRegistry() {
-  const chart: HelmChart = {
+  const chart: UntypedHelmChart = {
     apiVersion: "helm.gin.jsr.io/v1alpha1",
     kind: "HelmChart",
     metadata: {
@@ -52,7 +52,7 @@ Deno.test(async function testHelmChartFromRegistry() {
 //       the SSH key passphrase or agent.
 
 Deno.test(async function testHelmChartFromGitHttpsRepository() {
-  const chart: HelmChart = {
+  const chart: UntypedHelmChart = {
     apiVersion: "helm.gin.jsr.io/v1alpha1",
     kind: "HelmChart",
     metadata: {
@@ -82,7 +82,7 @@ Deno.test(async function testHelmChartFromGitHttpsRepository() {
 });
 
 Deno.test(async function testHelmChartFromFileSystem() {
-  const chart: HelmChart = {
+  const chart: UntypedHelmChart = {
     apiVersion: "helm.gin.jsr.io/v1alpha1",
     kind: "HelmChart",
     metadata: {
@@ -111,7 +111,7 @@ Deno.test(async function testHelmChartFromFileSystem() {
 });
 
 Deno.test(async function testHelmChartFromFileSystemCannotHaveVersionSet() {
-  const chart: HelmChart = {
+  const chart: UntypedHelmChart = {
     apiVersion: "helm.gin.jsr.io/v1alpha1",
     kind: "HelmChart",
     metadata: {

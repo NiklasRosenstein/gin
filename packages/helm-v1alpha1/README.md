@@ -9,8 +9,12 @@ chart, then `helm template` to render the chart and return the resulting Kuberne
 import { Gin } from "jsr:@gin/core";
 import { HelmChart } from "jsr:@gin/helm-v1alpha1";
 
+interface CertManagerValues {
+  installCRDs: boolean;
+}
+
 new Gin().run((gin) => {
-  gin.emit<HelmChart>({
+  gin.emit<HelmChart<CertManagerValues>>({
     apiVersion: "helm.gin.jsr.io/v1alpha1",
     kind: "HelmChart",
     metadata: {
@@ -28,6 +32,9 @@ new Gin().run((gin) => {
   });
 });
 ```
+
+You can use the `UntypedHelmChart` type instead if you can't or don't want to spell out the interface for the Helm chart
+values.
 
 ## Supported Chart Repositories
 
@@ -50,7 +57,6 @@ Note this package requires some Deno permissions to run, specifically:
 
 | Permission         | Rationale                                                                                        |
 | ------------------ | ------------------------------------------------------------------------------------------------ |
-| `--allow-write`    | The chart values are rendered to disk before they are passed to the `helm` command.              |
 | `--allow-run=helm` | This package uses the `helm` CLI to render charts. This permission is always required.           |
 | `--allow-run=git`  | Required when referencing charts from a Git repository using the`git+(ssh\|https?)://` protocol. |
 | `--allow-read`     | Required when referencing charts from a Git repository to check for folder existence.            |

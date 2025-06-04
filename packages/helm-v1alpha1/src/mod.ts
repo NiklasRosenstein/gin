@@ -1,9 +1,9 @@
 import { Module } from "@gin/core";
 import type { HelmOptions } from "./options.ts";
-import { type HelmChart, HelmChartAdapter } from "./helmchart.ts";
+import { HelmChartAdapter, type UntypedHelmChart } from "./helmchart.ts";
 
 export type { HelmOptions } from "./options.ts";
-export { type HelmChart, HelmChartAdapter } from "./helmchart.ts";
+export { type HelmChart, HelmChartAdapter, type UntypedHelmChart } from "./helmchart.ts";
 
 import { createManagedTempDir } from "@gin/core/util";
 
@@ -20,7 +20,7 @@ export default async (options?: HelmOptions): Promise<Module> => {
   }
 
   return new Module("@gin/helm-v1alpha1")
-    .withAdapter<HelmChart>(
+    .withAdapter<UntypedHelmChart>(
       { apiVersion: "helm.gin.jsr.io/v1alpha1", kind: "HelmChart" },
       new HelmChartAdapter(cacheDir),
     );

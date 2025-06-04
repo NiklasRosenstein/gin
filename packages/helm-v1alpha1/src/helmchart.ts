@@ -16,7 +16,7 @@ import { reconcileSparseCheckout } from "./git.ts";
  * The Helm chart will inherit the `metadata.name` as the release name and the `metadata.namespace` as the release
  * namespace. The labels on the `HelmChart` resource will be propagated to the generated resources.
  */
-export interface HelmChart extends KubernetesObject {
+export interface HelmChart<T> extends KubernetesObject {
   apiVersion: "helm.gin.jsr.io/v1alpha1";
   kind: "HelmChart";
   spec: {
@@ -49,14 +49,22 @@ export interface HelmChart extends KubernetesObject {
     /**
      * Values to pass to the Helm chart.
      */
-    values?: Record<string, unknown>;
+    values?: T;
   };
 }
 
-export class HelmChartAdapter implements ResourceAdapter<HelmChart> {
+/**
+ * A variant of the {@link HelmChart} that is explicitly for its {@link HelmChart#spec.values} field. Use this when
+ * you don't want to type the Helm chart values, or can't.
+ */
+// deno-lint-ignore no-explicit-any
+export interface UntypedHelmChart extends HelmChart<{ [key: string]: any }> {
+}
+
+export class HelmChartAdapter implements ResourceAdapter<UntypedHelmChart> {
   constructor(public cacheDir: string) {}
 
-  async validate(_gin: Gin, resource: HelmChart): Promise<void> {
+  async validate(_gin: Gin, resource: UntypedHelmChart): Promise<void> {
     if (!resource.metadata.namespace) {
       throw new Error("HelmChart metadata.namespace is required");
     }
@@ -78,7 +86,7 @@ export class HelmChartAdapter implements ResourceAdapter<HelmChart> {
     return await Promise.resolve();
   }
 
-  async generate(_gin: Gin, resource: HelmChart): Promise<KubernetesObject[]> {
+  async generate(_gin: Gin, resource: UntypedHelmChart): Promise<KubernetesObject[]> {
     const { repository, chart, version, values } = resource.spec;
 
     let chartPath: string;
