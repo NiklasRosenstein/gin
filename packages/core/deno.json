@@ -1,6 +1,6 @@
 {
   "name": "@gin/core",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "exports": {
     ".": "./src/mod.ts",
     "./util": "./src/util.ts"
