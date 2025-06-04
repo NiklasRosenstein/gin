@@ -79,9 +79,11 @@ export function getCallerFileAndLine(depth: number = 1): string {
 /**
  * Recursively drop keys from the object that have value `undefined`.
  */
+export function dropUndefined<T>(arr: (T | undefined)[]): T[];
+export function dropUndefined<T>(obj: T): T;
 export function dropUndefined<T extends unknown>(obj: T): T {
   if (Array.isArray(obj)) {
-    return obj.map(dropUndefined) as T;
+    return obj.filter((x) => x !== undefined).map(dropUndefined) as T;
   } else if (obj && typeof obj === "object") {
     return Object.fromEntries(
       Object.entries(obj)
@@ -131,4 +133,26 @@ export function restorePrototypes<T>(original: T, clone: any): T {
 export function deepClone<T>(obj: T): T {
   const clone = structuredClone(obj);
   return restorePrototypes(obj, clone);
+}
+
+/**
+ * Replace values in an object or array recursively based on a mapping function. Returns a copy of the
+ * original object or array with the values replaced.
+ */
+export function replaceValues<T>(
+  obj: T,
+  mappingFn: (value: unknown) => unknown,
+): T {
+  if (Array.isArray(obj)) {
+    return obj.map((item) => replaceValues(item, mappingFn)) as unknown as T;
+  } else if (obj && typeof obj === "object") {
+    const newObj = {} as Record<string, unknown>;
+    Object.setPrototypeOf(newObj, Object.getPrototypeOf(obj));
+    for (const [key, value] of Object.entries(obj)) {
+      newObj[key] = replaceValues(value, mappingFn);
+    }
+    return newObj as T;
+  } else {
+    return mappingFn(obj) as T;
+  }
 }

@@ -6,8 +6,9 @@ import { Module, type ModuleOptions, type ResourceAdapter } from "./module.ts";
 import { escape } from "@std/regexp/escape";
 import { type Sink, StdoutSink as YamlStdoutSink } from "./sink.ts";
 import { type KubernetesObject, ResourceLocator } from "./types.ts";
-import { deepClone, getCallerFileAndLine } from "./util.ts";
+import { deepClone, dropUndefined, getCallerFileAndLine, replaceValues } from "./util.ts";
 import { parseArgs } from "@std/cli";
+import { SecretValue } from "./mod.ts";
 
 interface PackageMapping {
   /**
@@ -305,9 +306,18 @@ export class Gin {
 
       const children = await this.processOnce(resource);
 
+      // The final processing step is to replace any `SecretValue` instances with their string representation,
+      // and drop any `undefined` values as they cannot be stringified to YAML.
+      const finalResource = dropUndefined(replaceValues(resource, (val) => {
+        if (val instanceof SecretValue) {
+          return val.toString();
+        }
+        return val;
+      }));
+
       // Only send the resource to the sink after it has been processed. The `processOnce` method modifies the
       // resource in place (e.g. by ensuring the `gin` field is updated appropriately).
-      this.sink.accept(resource);
+      this.sink.accept(finalResource);
 
       // If the object is not processed by a the adapter, we will get a list with a single resource in it.
       if (children.length === 1 && children[0] === resource) {
