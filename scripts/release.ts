@@ -6,27 +6,13 @@
 
 import * as semver from "jsr:@std/semver@^1.0.0";
 import { run } from "../packages/helm-v1alpha1/src/git.ts";
+import { assert } from "@std/assert/assert";
 
 function usageAndExit(): never {
   console.error(
     "Usage: deno run scripts/release.ts <pkg> [<pkg> ...] <version | 'major' | 'minor' | 'patch'>",
   );
   Deno.exit(1);
-}
-
-async function getLatestVersion(pkg: string): Promise<semver.SemVer | undefined> {
-  const tags = await run(["git", "tag", "--list", `${pkg}@v*`], { check: true, stdout: "piped" });
-  if (tags.code !== 0) {
-    console.error("Failed to list Git tags.");
-    Deno.exit(1);
-  }
-  const tagList = new TextDecoder().decode(tags.stdout).trim().split("\n");
-  return tagList
-    .map((tag) => tag.replace(`${pkg}@v`, ""))
-    .filter((tag) => !!tag)
-    .map(semver.parse)
-    .sort(semver.compare)
-    .pop();
 }
 
 const versionBumps = {
@@ -72,9 +58,21 @@ async function gitPush(refs: string[], force: boolean) {
   await run(args, { check: true });
 }
 
+async function getDenoJsonVersion(pkg: string): Promise<string> {
+  const denoJsonPath = `packages/${pkg}/deno.json`;
+  try {
+    const denoJson: { version?: string } = JSON.parse(await Deno.readTextFile(denoJsonPath));
+    assert(denoJson.version, `Version not found in ${denoJsonPath}`);
+    return denoJson.version;
+  } catch (error) {
+    console.error(`Failed to read or parse ${denoJsonPath}:`, error);
+    Deno.exit(1);
+  }
+}
+
 async function updateDenoJson(pkg: string, version: string, dry: boolean): Promise<[string, boolean]> {
   const denoJsonPath = `packages/${pkg}/deno.json`;
-  const denoJson: { version: string } = JSON.parse(Deno.readTextFileSync(denoJsonPath));
+  const denoJson: { version: string } = JSON.parse(await Deno.readTextFile(denoJsonPath));
   if (denoJson.version !== version) {
     const oldVersion = denoJson.version;
     denoJson.version = version;
@@ -123,12 +121,8 @@ async function main() {
   for (const pkg of args.pkgs) {
     let pkgVersion = version;
     if (version in versionBumps) {
-      const latestVersion = await getLatestVersion(pkg);
-      if (!latestVersion) {
-        console.error(`No previous version found for package ${pkg}.`);
-        Deno.exit(1);
-      }
-      pkgVersion = semver.format(versionBumps[version as keyof typeof versionBumps](latestVersion));
+      const latestVersion = await getDenoJsonVersion(pkg);
+      pkgVersion = semver.format(versionBumps[version as keyof typeof versionBumps](semver.parse(latestVersion)));
     }
 
     releasedVersions.set(pkg, pkgVersion);
