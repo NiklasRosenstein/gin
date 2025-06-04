@@ -3,7 +3,6 @@ import { parseAll, stringify } from "@std/yaml";
 import { FileUrl, GitUrl, parseRepoUrl } from "./repourl.ts";
 import { assert } from "@std/assert/assert";
 import { join } from "@std/path/join";
-import { crypto } from "@std/crypto/crypto";
 import { reconcileSparseCheckout } from "./git.ts";
 
 /**
