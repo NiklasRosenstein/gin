@@ -1,6 +1,6 @@
 import { assertEquals, assertRejects } from "@std/assert";
 import { WebAppConverter } from "./webapp.ts";
-import { Gin } from "@gin/core";
+import { Gin, SecretValue } from "@gin/core";
 import type { WebApp } from "./webapp.ts";
 
 function createWebApp(overrides: Partial<WebApp> = {}): WebApp {
@@ -69,20 +69,25 @@ Deno.test("WebAppConverter - should generate deployment, service, and ingress", 
       image: "nginxinc/nginx-unprivileged:stable-alpine",
       replicas: 3,
       hostname: "example.com",
+      secretEnv: {
+        API_KEY: SecretValue.of("MY_SECRET_API_KEY"),
+      },
     },
   });
 
   const resources = await converter.generate(gin, webapp);
 
-  assertEquals(resources.length, 3);
+  assertEquals(resources.length, 4);
 
   const deployment = resources.find((r) => r.kind === "Deployment");
   const service = resources.find((r) => r.kind === "Service");
   const ingress = resources.find((r) => r.kind === "Ingress");
+  const secret = resources.find((r) => r.kind === "Secret");
 
   assertEquals(deployment !== undefined, true);
   assertEquals(service !== undefined, true);
   assertEquals(ingress !== undefined, true);
+  assertEquals(secret !== undefined, true);
 });
 
 Deno.test("WebAppConverter - should generate deployment with correct configuration", async () => {

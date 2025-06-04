@@ -1,4 +1,4 @@
-import type { Gin, KubernetesObject, ResourceAdapter } from "@gin/core";
+import type { Gin, KubernetesObject, ResourceAdapter, SecretValue } from "@gin/core";
 import { dropUndefined } from "@gin/core/util";
 
 export interface WebApp extends KubernetesObject {
@@ -39,6 +39,12 @@ export interface WebApp extends KubernetesObject {
      * The environment variables to set in the main container.
      */
     env?: Record<string, string>;
+
+    /**
+     * Secret key-value pairs to set as environment variables in the main container. If specified,
+     * the values will be used to create a new `Secret` resource and mounted as environment variables.
+     */
+    secretEnv?: Record<string, SecretValue<string>>;
 
     /**
      * Additional environment variables to set in the main container read from secrets.
@@ -123,6 +129,22 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
     const selectorLabels = {
       [`${resource.apiVersion}.${resource.kind}`]: resource.metadata.name,
     };
+
+    let secret: KubernetesObject | undefined = undefined;
+    if (resource.spec.secretEnv && Object.keys(resource.spec.secretEnv).length > 0) {
+      secret = dropUndefined({
+        apiVersion: "v1",
+        kind: "Secret",
+        metadata: {
+          name: `${resource.metadata.name}-env`,
+          namespace: resource.metadata.namespace,
+        },
+        type: "Opaque",
+        data: Object.fromEntries(
+          Object.entries(resource.spec.secretEnv).map(([key, value]) => [key, value.secretAsBase64()]),
+        ),
+      });
+    }
 
     const deployment: KubernetesObject = dropUndefined({
       apiVersion: "apps/v1",
@@ -242,6 +264,6 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
       },
     });
 
-    return Promise.resolve([deployment, service, ingress]);
+    return Promise.resolve(dropUndefined([secret, deployment, service, ingress]));
   }
 }
