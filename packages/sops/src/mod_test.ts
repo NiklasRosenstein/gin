@@ -1,7 +1,7 @@
 import { SecretValue } from "@gin/core";
 import { assertEquals } from "@std/assert/equals";
 import { Sops } from "./mod.ts";
-import { assertRejects } from "@std/assert/rejects";
+import { assertRejects } from "@std/assert";
 
 Deno.test(async function testJsonPathInSopsGet() {
   const sops = new Sops({
@@ -22,18 +22,21 @@ Deno.test(async function testJsonPathInSopsGet() {
   });
 
   assertEquals(await sops.getString("stringValue"), SecretValue.of("test"));
-  assertRejects(
+  await assertRejects(
     () => sops.getString("numberValue"),
+    Error,
     'Failed to resolve "string" secret "numberValue", expected "string" got "number".',
   );
 
   assertEquals(await sops.getArray("arrayValue"), SecretValue.of([1, 2, 3]));
-  assertRejects(
+  await assertRejects(
     () => sops.getArray("stringValue"),
+    Error,
     'Failed to resolve "array" secret "stringValue", expected "array" got "string".',
   );
-  assertRejects(
+  await assertRejects(
     () => sops.getArray("objectValue"),
+    Error,
     'Failed to resolve "array" secret "objectValue", expected "array" got "object".',
   );
 
@@ -44,9 +47,11 @@ Deno.test(async function testJsonPathInSopsGet() {
       nestedNumber: 100,
     }),
   );
-  assertRejects(
+
+  await assertRejects(
     () => sops.getObject("arrayValue"),
-    'Failed to resolve "object" secret "objectValue", expected "object" got "array".',
+    Error,
+    'Failed to resolve "object" secret "arrayValue", expected "object" got "array".',
   );
 
   assertEquals(await sops.getArray("nestedArrayValue[*].key"), SecretValue.of(["value1", "value2"]));

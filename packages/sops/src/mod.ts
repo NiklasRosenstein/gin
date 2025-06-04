@@ -85,7 +85,9 @@ export class Sops implements SecretProvider {
       );
     }
     if (typeof result[0] !== "string") {
-      throw new Error(`Failed to resolve "string" secret "${name}", expected "string" got "${typeof result[0]}".`);
+      throw new Error(
+        `Failed to resolve "string" secret "${name}", expected "string" got "${betterTypeof(result[0])}".`,
+      );
     }
     return SecretValue.of(result[0]);
   }
@@ -100,7 +102,7 @@ export class Sops implements SecretProvider {
       );
     }
     if (!Array.isArray(result[0])) {
-      throw new Error(`Failed to resolve "array" secret "${name}", expected "array" got "${typeof result[0]}".`);
+      throw new Error(`Failed to resolve "array" secret "${name}", expected "array" got "${betterTypeof(result[0])}".`);
     }
     return SecretValue.of(result[0] as Array<unknown>);
   }
@@ -113,8 +115,16 @@ export class Sops implements SecretProvider {
       );
     }
     if (typeof result[0] !== "object" || result[0] === null || Array.isArray(result[0])) {
-      throw new Error(`Failed to resolve "object" secret "${name}", expected "object" got "${typeof result[0]}".`);
+      throw new Error(
+        `Failed to resolve "object" secret "${name}", expected "object" got "${betterTypeof(result[0])}".`,
+      );
     }
     return SecretValue.of(result[0] as Record<string, unknown>);
   }
+}
+
+function betterTypeof(value: unknown): string {
+  if (value === null) return "null";
+  if (Array.isArray(value)) return "array";
+  return typeof value;
 }
