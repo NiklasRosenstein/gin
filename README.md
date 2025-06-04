@@ -3,6 +3,7 @@
 [sec]: https://docs.deno.com/runtime/fundamentals/security/
 [@gin]: https://jsr.io/@gin
 [Deno]: https://deno.com
+[webapp]: https://jsr.io/@gin/webapp-v1alpha1
 
 Gin is a templating engine for Kubernetes based on [Deno] that leverages TypeScript's powerful type system to turn
 Kubernetes deployment configuration type-safe.
