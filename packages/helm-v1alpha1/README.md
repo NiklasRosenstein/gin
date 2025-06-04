@@ -15,16 +15,42 @@ new Gin().run((gin) => {
     kind: "HelmChart",
     metadata: {
       name: "cert-manager",
-      namespace: "cert-manager"
+      namespace: "cert-manager",
     },
     spec: {
       repository: "https://charts.jetstack.io",
       chart: "cert-manager",
       version: "1.17.2",
       values: {
-        installCRDs: true
-      }
-    }
+        installCRDs: true,
+      },
+    },
   });
 });
 ```
+
+## Supported Chart Repositories
+
+The following chart repository protocols are supported:
+
+| Protocol              | Example                                                                 | Description                                                         |
+| --------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `http://`, `https://` | `https://charts.jetstack.io`                                            | Standard HTTP(S) chart repositories.                                |
+| `oci://`              | `oci://ghcr.io/jetstack`                                                | OCI-compliant chart repositories.                                   |
+| `file://`             | `file:///path/to/chart`                                                 | Local file system chart repositories.                               |
+| `git+ssh://`          | `git+ssh://git@github.com/jetstack/cert-manager.git?path=deploy/charts` | Sparse check for a Git repositories using SSH.                      |
+| `git+https://`        | `git+https://github.com/jetstack/cert-manager.git?path=deploy/charts`   | Sparse check for a Git repositories using SSH. Supports basic-auth. |
+
+> **Important**: In all cases, the _chart name_ is not a part of the URL. It must be specified in the `spec.chart` field
+> of the `HelmChart` resource.
+
+## Deno Permissions
+
+Note this package requires some Deno permissions to run, specifically:
+
+| Permission         | Rationale                                                                                        |
+| ------------------ | ------------------------------------------------------------------------------------------------ |
+| `--allow-write`    | The chart values are rendered to disk before they are passed to the `helm` command.              |
+| `--allow-run=helm` | This package uses the `helm` CLI to render charts. This permission is always required.           |
+| `--allow-run=git`  | Required when referencing charts from a Git repository using the`git+(ssh\|https?)://` protocol. |
+| `--allow-read`     | Required when referencing charts from a Git repository to check for folder existence.            |

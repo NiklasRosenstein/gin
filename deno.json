@@ -16,6 +16,6 @@
     "@std/assert": "jsr:@std/assert@^1.0.13"
   },
   "tasks": {
-    "all": "deno fmt && deno lint --fix && deno check && deno test --no-check"
+    "all": "deno fmt && deno lint --fix && deno check && deno test --no-check --allow-write --allow-run=helm,git"
   }
 }

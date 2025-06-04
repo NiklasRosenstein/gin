@@ -2,5 +2,18 @@
   "name": "@gin/helm-v1alpha1",
   "version": "0.1.0",
   "exports": "./src/mod.ts",
-  "license": "MIT"
+  "license": "MIT",
+  "fmt": {
+    "exclude": [
+      "testdata"
+    ]
+  },
+  "imports": {
+    "@eemeli/yaml": "jsr:@eemeli/yaml@^2.8.0",
+    "@gin/core": "jsr:@gin/core@0.1",
+    "@std/crypto": "jsr:@std/crypto@^1.0.5",
+    "@std/encoding": "jsr:@std/encoding@^1.0.10",
+    "@std/path": "jsr:@std/path@^1.1.0",
+    "@std/yaml": "jsr:@std/yaml@^1.0.7"
+  }
 }
