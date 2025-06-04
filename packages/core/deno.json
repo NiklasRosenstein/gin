@@ -11,8 +11,5 @@
     "@std/regexp": "jsr:@std/regexp@^1.0.1",
     "@std/yaml": "jsr:@std/yaml@^1.0.7",
     "stacktracey": "npm:stacktracey@^2.1.8"
-  },
-  "tasks": {
-    "test": "deno test"
   }
 }

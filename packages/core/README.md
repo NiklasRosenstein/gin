@@ -72,3 +72,8 @@ The release script does all these steps for you.
 ```console
 $ deno run --allow-all ./scripts/release.ts {pkg}@v{version}
 ```
+
+## Developemnt
+
+- All `packages/*/deno.json` files need a `test-this` task that is used by the `all` task in the root `deno.json` as
+  well as in `scripts/picky-publisher.ts` to test the package before publishing.

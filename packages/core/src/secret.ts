@@ -23,7 +23,24 @@ export class SecretValue<T = string> {
     return btoa(this.secretValue);
   }
 
+  /**
+   * Map the secret value to another secret value.
+   */
+  map<U>(fn: (value: T) => U): SecretValue<U> {
+    return new SecretValue(fn(this.secretValue));
+  }
+
   static of<T = string>(value: T): SecretValue<T> {
     return new SecretValue(value);
   }
+}
+
+/**
+ * A secret provider is a function that looks up a secret by name and returns a `SecretValue`. Secrets are
+ * usually strings, but a complex object can also be returned (depending on the value at the provided name).
+ */
+export interface SecretProvider {
+  getString(name: string): Promise<SecretValue<string>>;
+  getArray(name: string): Promise<SecretValue<Array<unknown>>>;
+  getObject(name: string): Promise<SecretValue<Record<string, unknown>>>;
 }
