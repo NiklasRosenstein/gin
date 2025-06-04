@@ -106,7 +106,7 @@ export class Gin {
 
       // If a function is exported, it is one that produces a module given options.
       if (typeof pkg.default === "function") {
-        const options = this.options.get(pkg.default.name);
+        const options = this.getOptions(packageName);
         module = await pkg.default(options);
         if (!(module instanceof Module)) {
           throw new Error(`Package '${packageName}' default export is a function, but it did not return a Module.`);
@@ -134,12 +134,12 @@ export class Gin {
   /**
    * Setup options for when a module is loaded from a package.
    */
-  withOptions<T extends ModuleOptions>(options: Pick<T, "type"> & Partial<T>): Gin {
-    if (!options.type) {
+  withOptions<T extends ModuleOptions>(options: Pick<T, "pkg"> & Partial<T>): Gin {
+    if (!options.pkg) {
       throw new Error("Module options must have a 'type' field.");
     }
-    console.trace(`Adding options for module type '${options.type}':`, options);
-    this.options.set(options.type, options as T);
+    console.trace(`Adding options for module type '${options.pkg}':`, options);
+    this.options.set(options.pkg, options as T);
     return this;
   }
 
@@ -176,6 +176,19 @@ export class Gin {
       }
     }
     return undefined;
+  }
+
+  /**
+   * Load the options for the given module.
+   *
+   * @param pkg - The package name of the module to load options for. This may have the `jsr:` prefix, which is
+   *              stripped first (see {@link ModuleOptions#pkg}).
+   */
+  getOptions(pkg: string): ModuleOptions | undefined {
+    if (pkg.startsWith("jsr:")) {
+      pkg = pkg.slice(4);
+    }
+    return this.options.get(pkg);
   }
 
   /**

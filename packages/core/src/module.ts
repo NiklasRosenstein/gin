@@ -5,9 +5,14 @@ import type { Gin } from "./gin.ts";
  * Some modules may require options to be created. If a Gin package exports a function instead of a {@link Module},
  * the function is expected to accept an options object with the `type` field matching what it expects and return a
  * {@link Module} instance.
+ *
+ * The {@link pkg} field must be the name of your JSR package with the `jsr:` prefix, just like the
+ * {@link Module#name}, only that here it is mandatory for Gin to resolve the options when the module is loaded by
+ * {@link Gin#withPackage}. This is because the options must be resolved before the module is loaded, and that is
+ * based on the package name. The {@link Module#name} should only be the same value for consistency.
  */
 export interface ModuleOptions {
-  type: string;
+  pkg: string;
   [key: string]: unknown;
 }
 
@@ -22,15 +27,20 @@ export interface ModuleOptions {
  * the encountered API version and kind.
  */
 export class Module {
-  private name: string;
+  private pkg: string;
   private resourceAdapters: Map<string, Map<string, ResourceAdapter>> = new Map();
 
-  constructor(name: string) {
-    this.name = name;
+  /**
+   * @param pkg - The name of the package that exports this module, without the `jsr:` prefix. This should be set
+   *              properly only for consistency; it is only actually required to be the correct package name on
+   *              {@link ModuleOptions#pkg}.
+   */
+  constructor(pkg: string) {
+    this.pkg = pkg;
   }
 
   toString(): string {
-    return `Module(name: ${this.name})`;
+    return `Module(from pkg: ${this.pkg})`;
   }
 
   /**
