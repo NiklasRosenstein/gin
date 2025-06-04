@@ -8,7 +8,7 @@ export { type HelmChart, HelmChartAdapter, type UntypedHelmChart } from "./helmc
 import { createManagedTempDir } from "@gin/core/util";
 
 export default async (options?: HelmOptions): Promise<Module> => {
-  let cacheDir: string | undefined = options?.cacheDir ?? "gin-cache";
+  let cacheDir: string | undefined = options?.cacheDir;
   if (!cacheDir) {
     console.warn(
       "HelmChartAdapter: No cache directory specified. Using a temporary directory for Helm charts and Git " +
