@@ -17,6 +17,6 @@
     "@std/yaml": "jsr:@std/yaml@^1.0.7"
   },
   "tasks": {
-    "test": "deno test --allow-write --allow-run=helm,git"
+    "test-this": "deno test --allow-write --allow-run=helm,git"
   }
 }
