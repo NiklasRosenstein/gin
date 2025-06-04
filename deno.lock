@@ -10,6 +10,7 @@
     "jsr:@std/internal@^1.0.6": "1.0.8",
     "jsr:@std/path@^1.1.0": "1.1.0",
     "jsr:@std/regexp@^1.0.1": "1.0.1",
+    "jsr:@std/semver@1": "1.0.5",
     "jsr:@std/yaml@*": "1.0.7",
     "jsr:@std/yaml@^1.0.7": "1.0.7",
     "npm:@types/node@*": "22.12.0",
@@ -51,6 +52,9 @@
     },
     "@std/regexp@1.0.1": {
       "integrity": "5179d823465085c5480dafb44438466e83c424fadc61ba31f744050ecc0f596d"
+    },
+    "@std/semver@1.0.5": {
+      "integrity": "529f79e83705714c105ad0ba55bec0f9da0f24d2f726b6cc1c15e505cc2c0624"
     },
     "@std/yaml@1.0.7": {
       "integrity": "b4b9f6a625a6827ca2b75a3d240558b5ffd8b9a29945ec7614871be7b711a10a"

@@ -23,7 +23,7 @@ interface RunOptions extends Deno.CommandOptions {
 /**
  * Helper function to run a command.
  */
-async function run(command: string[], options: RunOptions = {}): Promise<Deno.CommandOutput> {
+export async function run(command: string[], options: RunOptions = {}): Promise<Deno.CommandOutput> {
   if (!command || command.length === 0) {
     throw new Error("Command must be a non-empty array");
   }
