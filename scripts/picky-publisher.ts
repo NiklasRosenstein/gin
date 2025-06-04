@@ -30,8 +30,7 @@ if (lintResult.code !== 0) {
 
 console.log(`Testing package '${packageName}' ...`);
 const testResult = await new Deno.Command(Deno.execPath(), {
-  args: ["task", "test"],
-  cwd: packageName,
+  args: ["run", "./scripts/test-all.ts", packageName],
 }).spawn().output();
 
 if (testResult.code !== 0) {
