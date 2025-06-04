@@ -91,3 +91,20 @@ export function dropUndefined<T extends unknown>(obj: T): T {
   }
   return obj;
 }
+
+/**
+ * Create a temporary directory that will be cleaned up when the Deno process exits. Note that
+ * this directory may be left behind if the process is killed or crashes.
+ */
+export async function createManagedTempDir(prefix: string): Promise<string> {
+  const dir = await Deno.makeTempDir({ prefix });
+  globalThis.addEventListener("unload", () => {
+    try {
+      // NOTE: If we use the async variant, not all file will be removed before the process exits.
+      Deno.removeSync(dir, { recursive: true });
+    } catch (e) {
+      console.warn(`Failed to remove temporary directory ${dir}:`, e);
+    }
+  });
+  return dir;
+}
