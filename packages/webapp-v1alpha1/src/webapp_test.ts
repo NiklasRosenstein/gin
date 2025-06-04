@@ -14,7 +14,7 @@ function createWebApp(overrides: Partial<WebApp> = {}): WebApp {
     },
     spec: {
       image: "nginx:latest",
-      hostname: "example.com",
+      host: "example.com",
       replicas: 3,
       ...((overrides.spec as object) || {}),
     },
@@ -40,7 +40,7 @@ Deno.test("WebAppConverter - should throw error when replicas is less than 1", a
   const converter = new WebAppConverter();
   const gin = new Gin("bare");
 
-  const webapp = createWebApp({ spec: { image: "nginx:latest", hostname: "example.com", replicas: 0 } });
+  const webapp = createWebApp({ spec: { image: "nginx:latest", host: "example.com", replicas: 0 } });
 
   await assertRejects(
     () => converter.validate(gin, webapp),
@@ -68,7 +68,7 @@ Deno.test("WebAppConverter - should generate deployment, service, and ingress", 
     spec: {
       image: "nginxinc/nginx-unprivileged:stable-alpine",
       replicas: 3,
-      hostname: "example.com",
+      host: "example.com",
       secretEnv: {
         API_KEY: SecretValue.of("MY_SECRET_API_KEY"),
       },
@@ -99,7 +99,7 @@ Deno.test("WebAppConverter - should generate deployment with correct configurati
     spec: {
       image: "nginxinc/nginx-unprivileged:stable-alpine",
       replicas: 3,
-      hostname: "example.com",
+      host: "example.com",
       port: 3000,
       env: { NODE_ENV: "production" },
     },

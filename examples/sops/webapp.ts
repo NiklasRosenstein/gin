@@ -14,7 +14,7 @@ new Gin().run(async (gin) => {
     },
     spec: {
       image: "myapp:latest",
-      hostname: "myapp.example.com",
+      host: "myapp.example.com",
       secretEnv: {
         AWS_ACCESS_KEY_ID: await sops.getString("credentials.awsAccessKeyId"),
         AWS_SECRET_ACCESS_KEY: await sops.getString("credentials.awsSecretAccessKey"),

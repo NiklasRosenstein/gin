@@ -21,7 +21,7 @@ new Gin().run((gin) => {
     spec: {
       image: "nginxinc/nginx-unprivileged:stable-alpine",
       replicas: 3,
-      hostname: "example.com",
+      host: "example.com",
       clusterIssuer: "letsencrypt-prod",
     },
   });
