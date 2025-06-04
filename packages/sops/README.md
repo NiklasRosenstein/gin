@@ -7,9 +7,10 @@ have it installed your system.
 ## Usage
 
 ```ts
+import { SecretValue } from "@gin/core";
 import { Sops } from "@gin/sops";
 const sops = new Sops({ path: `${import.meta.dirname}/sops.yaml` });
-const secret = sops.get("dotted.path.to.secret");
+const secretKey: SecretValue<String> = sops.getString("credentials.secretKey");
 ```
 
 Your environment must be set up for the `sops` command to work and be able to decrypt the SOPS file. This typically
@@ -21,3 +22,8 @@ information.
 | Permission         | Rationale                                                                        |
 | ------------------ | -------------------------------------------------------------------------------- |
 | `--allow-run=sops` | This package uses the `sops` command-line tool to read secrets from a SOPS file. |
+
+## Extras
+
+This package contains a `sops.schema.json` that can be added to your `.sops.yaml` files to enable schema validation in
+your editor. For your convenience, it's available

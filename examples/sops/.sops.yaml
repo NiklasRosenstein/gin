@@ -1,0 +1,3 @@
+# yaml-language-server: $schema=https://gist.githubusercontent.com/NiklasRosenstein/e75cf88ca419620723e02c8b3a9cba4f/raw/830132a9b6af13c31001d7bed36ec2fea1f068cf/sops.schema.yaml
+creation_rules:
+  - age: age1ggkd0kxmvtn8el5phk3wqjptpwk8v6g796f62ndgg73kszg2m5uqg4wypl

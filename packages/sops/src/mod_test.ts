@@ -1,6 +1,6 @@
+import { SecretValue } from "@gin/core";
 import { assertEquals } from "@std/assert/equals";
 import { Sops } from "./mod.ts";
-import { SecretValue } from "../core/src/mod.ts";
 import { assertRejects } from "@std/assert/rejects";
 
 Deno.test(async function testJsonPathInSopsGet() {
