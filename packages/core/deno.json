@@ -8,6 +8,8 @@
   "license": "MIT",
   "imports": {
     "@std/cli": "jsr:@std/cli@^1.0.19",
+    "@std/crypto": "jsr:@std/crypto@^1.0.5",
+    "@std/encoding": "jsr:@std/encoding@^1.0.10",
     "@std/regexp": "jsr:@std/regexp@^1.0.1",
     "@std/yaml": "jsr:@std/yaml@^1.0.7",
     "stacktracey": "npm:stacktracey@^2.1.8"

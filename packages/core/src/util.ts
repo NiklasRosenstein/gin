@@ -1,4 +1,6 @@
 import { assert } from "@std/assert/assert";
+import type { DigestAlgorithm } from "@std/crypto/crypto";
+import { encodeHex } from "@std/encoding/hex";
 import StackTracey from "stacktracey";
 
 // When we describe the origin of a resource, we need to split it into multiple labels because Kubernetes label
@@ -159,4 +161,22 @@ export function replaceValues<T>(
   else {
     return mappingFn(obj) as T;
   }
+}
+
+/**
+ * Hashes the given data using the specified algorithm and returns the hash as a hexadecimal string.
+ *
+ * @param algorithm - The hashing algorithm to use (e.g., "SHA-1", "SHA-256").
+ * @param data - An array of strings to be concatenated and hashed.
+ */
+export async function hashToHexdigest(
+  algorithm: DigestAlgorithm,
+  data: string[],
+): Promise<string> {
+  const encoder = new TextEncoder();
+  const hashBuffer = await crypto.subtle.digest(
+    algorithm,
+    encoder.encode(data.join("\n")),
+  );
+  return encodeHex(hashBuffer);
 }
