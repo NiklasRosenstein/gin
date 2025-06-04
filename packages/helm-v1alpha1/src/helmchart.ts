@@ -54,8 +54,8 @@ export interface HelmChart<T> extends KubernetesObject {
 }
 
 /**
- * A variant of the {@link HelmChart} that is explicitly for its {@link HelmChart#spec.values} field. Use this when
- * you don't want to type the Helm chart values, or can't.
+ * A variant of the {@link HelmChart} that is explicitly untyped for its {@link HelmChart#spec} `values` field. Use
+ * this when you don't want to type the Helm chart values, or can't.
  */
 // deno-lint-ignore no-explicit-any
 export interface UntypedHelmChart extends HelmChart<{ [key: string]: any }> {
