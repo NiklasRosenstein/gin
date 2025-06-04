@@ -14,7 +14,6 @@
     "jsr:@std/yaml@*": "1.0.7",
     "jsr:@std/yaml@^1.0.7": "1.0.7",
     "npm:@types/node@*": "22.12.0",
-    "npm:lodash@^4.17.21": "4.17.21",
     "npm:stacktracey@^2.1.8": "2.1.8"
   },
   "jsr": {
@@ -83,9 +82,6 @@
         "source-map"
       ]
     },
-    "lodash@4.17.21": {
-      "integrity": "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg=="
-    },
     "printable-characters@1.0.42": {
       "integrity": "sha512-dKp+C4iXWK4vVYZmYSd0KBH5F/h1HoZRsbJ82AVKRO3PEo8L4lBS/vLwhVtpwwuYcoIsVY+1JYKR268yn480uQ=="
     },
@@ -148,7 +144,6 @@
           "jsr:@std/cli@^1.0.19",
           "jsr:@std/regexp@^1.0.1",
           "jsr:@std/yaml@^1.0.7",
-          "npm:lodash@^4.17.21",
           "npm:stacktracey@^2.1.8"
         ]
       },

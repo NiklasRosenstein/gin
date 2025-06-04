@@ -8,7 +8,6 @@ import { type Sink, StdoutSink as YamlStdoutSink } from "./sink.ts";
 import { type KubernetesObject, ResourceLocator } from "./types.ts";
 import { getCallerFileAndLine } from "./util.ts";
 import { parseArgs } from "@std/cli";
-import _ from "lodash";
 
 interface PackageMapping {
   /**
@@ -286,7 +285,7 @@ export class Gin {
    * @param resource - The Kubernetes resource to emit.
    */
   async emit<T extends KubernetesObject>(resource: T): Promise<void> {
-    resource = _.cloneDeep(resource);
+    resource = structuredClone(resource);
     resource.gin = resource.gin || {};
     resource.gin.emittedFrom = getCallerFileAndLine();
 
