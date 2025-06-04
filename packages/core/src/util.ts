@@ -108,3 +108,27 @@ export async function createManagedTempDir(prefix: string): Promise<string> {
   });
   return dir;
 }
+
+/**
+ * Restores the prototypes of objects in a structured clone.
+ */
+// deno-lint-ignore no-explicit-any
+export function restorePrototypes<T>(original: T, clone: any): T {
+  if (original && typeof original === "object") {
+    Object.setPrototypeOf(clone, Object.getPrototypeOf(original));
+    for (const key of Object.keys(clone)) {
+      if (typeof clone[key] === "object" && clone[key] !== null && (original as Record<string, unknown>)[key]) {
+        restorePrototypes((original as Record<string, unknown>)[key], clone[key]);
+      }
+    }
+  }
+  return clone;
+}
+
+/**
+ * Performs a deep clone of an object, retaining object prototypes.
+ */
+export function deepClone<T>(obj: T): T {
+  const clone = structuredClone(obj);
+  return restorePrototypes(obj, clone);
+}

@@ -6,7 +6,7 @@ import { Module, type ModuleOptions, type ResourceAdapter } from "./module.ts";
 import { escape } from "@std/regexp/escape";
 import { type Sink, StdoutSink as YamlStdoutSink } from "./sink.ts";
 import { type KubernetesObject, ResourceLocator } from "./types.ts";
-import { getCallerFileAndLine } from "./util.ts";
+import { deepClone, getCallerFileAndLine } from "./util.ts";
 import { parseArgs } from "@std/cli";
 
 interface PackageMapping {
@@ -285,7 +285,7 @@ export class Gin {
    * @param resource - The Kubernetes resource to emit.
    */
   async emit<T extends KubernetesObject>(resource: T): Promise<void> {
-    resource = structuredClone(resource);
+    resource = deepClone(resource);
     resource.gin = resource.gin || {};
     resource.gin.emittedFrom = getCallerFileAndLine();
 
