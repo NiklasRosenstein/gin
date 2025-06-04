@@ -1,5 +1,5 @@
-This package provides the `HelmChart` Gin custom resource for render Helm charts. It invokes the `helm pull` command to
-fetch the chart, then `helm template` to render the chart and return the resulting Kubernetes manifests to Gin.
+This package provides the `HelmChart` Gin custom resource for rendering Helm charts. It uses the `helm pull` command to
+fetch the chart and `helm template` to render it, returning the resulting Kubernetes manifests to Gin.
 
 ## Usage
 
@@ -31,17 +31,17 @@ new Gin().run((gin) => {
 });
 ```
 
-> Defining an interface for the Helm chart values is optional, but it is recommended to ensure type safety and
-> autocompletion in your IDE. The `HelmChart` type is generic and expects an interface for the chart values. If you
-> don't define an interface, you can use `UntypedHelmChart` instead.
+> Defining an interface for the Helm chart values is optional, but recommended for type safety and IDE autocompletion.
+> The `HelmChart` type is generic and expects an interface for the chart values. If you don't define an interface, you
+> can use `UntypedHelmChart` instead.
 
 ## Options
 
-This Gin package exports a Gin module factory that expects options. These options are optional, but it is recommended to
-consider configuring the options to suit your needs.
+This package exports a Gin module factory that accepts options. While all options are optional, configuring them can
+help tailor the behavior to your needs.
 
 ```ts
-import { Gein } from "jsr:@gin/gin";
+import { Gin } from "jsr:@gin/core";
 import { HelmOptions } from "jsr:@gin/helm-v1alpha1";
 
 new Gin()
@@ -54,33 +54,33 @@ new Gin()
   });
 ```
 
-Available options are:
+Available options:
 
-| Option     | Type     | Default     | Description                                                                                        |
-| ---------- | -------- | ----------- | -------------------------------------------------------------------------------------------------- |
-| `cacheDir` | `string` | `.gin/helm` | The directory where the Helm charts will be cached. This is useful for reusing charts across runs. |
+| Option     | Type     | Default           | Description                                                                     |
+| ---------- | -------- | ----------------- | ------------------------------------------------------------------------------- |
+| `cacheDir` | `string` | `.gin/cache/helm` | Directory where Helm charts are cached when pulled or cloned/checked out (Git). |
 
 ## Supported Chart Repositories
 
 The following chart repository protocols are supported:
 
-| Protocol              | Example                                                                 | Description                                                         |
-| --------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `http://`, `https://` | `https://charts.jetstack.io`                                            | Standard HTTP(S) chart repositories.                                |
-| `oci://`              | `oci://ghcr.io/jetstack`                                                | OCI-compliant chart repositories.                                   |
-| `file://`             | `file:///path/to/chart`                                                 | Local file system chart repositories.                               |
-| `git+ssh://`          | `git+ssh://git@github.com/jetstack/cert-manager.git?path=deploy/charts` | Sparse check for a Git repositories using SSH.                      |
-| `git+https://`        | `git+https://github.com/jetstack/cert-manager.git?path=deploy/charts`   | Sparse check for a Git repositories using SSH. Supports basic-auth. |
+| Protocol              | Example                                                                 | Description                                                            |
+| --------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `http://`, `https://` | `https://charts.jetstack.io`                                            | Standard HTTP(S) chart repositories.                                   |
+| `oci://`              | `oci://ghcr.io/jetstack`                                                | OCI-compliant chart repositories.                                      |
+| `file://`             | `file:///path/to/chart`                                                 | Local file system chart repositories.                                  |
+| `git+ssh://`          | `git+ssh://git@github.com/jetstack/cert-manager.git?path=deploy/charts` | Sparse checkout for Git repositories using SSH.                        |
+| `git+https://`        | `git+https://github.com/jetstack/cert-manager.git?path=deploy/charts`   | Sparse checkout for Git repositories using HTTPS. Supports basic-auth. |
 
-> **Important**: In all cases, the _chart name_ is not a part of the URL. It must be specified in the `spec.chart` field
-> of the `HelmChart` resource.
+> **Note**: The chart name is not part of the repository URL. Specify it in the `spec.chart` field of the `HelmChart`
+> resource.
 
 ## Deno Permissions
 
-Note this package requires some Deno permissions to run, specifically:
+This package requires the following Deno permissions:
 
-| Permission         | Rationale                                                                                        |
-| ------------------ | ------------------------------------------------------------------------------------------------ |
-| `--allow-run=helm` | This package uses the `helm` CLI to render charts. This permission is always required.           |
-| `--allow-run=git`  | Required when referencing charts from a Git repository using the`git+(ssh\|https?)://` protocol. |
-| `--allow-read`     | Required when referencing charts from a Git repository to check for folder existence.            |
+| Permission         | Reason                                                                              |
+| ------------------ | ----------------------------------------------------------------------------------- |
+| `--allow-run=helm` | Required to invoke the `helm` CLI for rendering charts.                             |
+| `--allow-run=git`  | Needed when referencing charts from a Git repository using the `git+(ssh            |
+| `--allow-read`     | Needed to check for folder existence when referencing charts from a Git repository. |
