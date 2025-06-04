@@ -9,7 +9,7 @@ import { run } from "../packages/helm-v1alpha1/src/git.ts";
 
 function usageAndExit(): never {
   console.error(
-    "Usage: deno run scripts/release.ts [<pkg>@v<version> | <pkg> <version | 'major' | 'minor' | 'patch'>",
+    "Usage: deno run scripts/release.ts <pkg> [<pkg> ...] <version | 'major' | 'minor' | 'patch'>",
   );
   Deno.exit(1);
 }
@@ -63,8 +63,8 @@ async function gitTag(tagName: string, force: boolean) {
   await run(args, { check: true });
 }
 
-async function gitPush(tagName: string, force: boolean) {
-  const args = ["git", "push", "origin", tagName];
+async function gitPush(refs: string[], force: boolean) {
+  const args = ["git", "push", "origin", ...refs];
   if (force) {
     args.push("--force");
   }
@@ -75,11 +75,12 @@ async function updateDenoJson(pkg: string, version: string, dry: boolean): Promi
   const denoJsonPath = `packages/${pkg}/deno.json`;
   const denoJson: { version: string } = JSON.parse(Deno.readTextFileSync(denoJsonPath));
   if (denoJson.version !== version) {
+    const oldVersion = denoJson.version;
     denoJson.version = version;
     if (!dry) {
       await Deno.writeTextFile(denoJsonPath, JSON.stringify(denoJson, null, 2) + "\n");
     }
-    console.log(`Updated version in ${denoJsonPath} to ${version}`);
+    console.log(`Updated version in ${denoJsonPath} from ${oldVersion} to ${version}`);
     return [denoJsonPath, true];
   }
   return [denoJsonPath, false];
@@ -91,41 +92,76 @@ async function main() {
     console.log("Running in dry mode. No changes will be made.");
   }
 
-  const force = Deno.args.includes("--force") || Deno.args.includes("-f");
-  let [pkg, version] = Deno.args[0]!.split("@v");
-  if (!pkg) {
-    usageAndExit();
-  }
+  const args = {
+    force: false,
+    dry: true,
+    pkgs: [] as string[],
+  };
 
-  version = version || Deno.args[1];
-  if (!version) {
-    usageAndExit();
-  }
-
-  if (version in versionBumps) {
-    const latestVersion = await getLatestVersion(pkg);
-    if (!latestVersion) {
-      console.error(`No previous version found for package ${pkg}.`);
-      Deno.exit(1);
+  for (const arg of Deno.args) {
+    if (arg == "--force" || arg == "-f") {
+      args.force = true;
+    } else if (arg == "--no-dry") {
+      args.dry = false;
+    } else if (arg.startsWith("-")) {
+      console.error(`Unknown argument: ${arg}`);
+      usageAndExit();
+    } else {
+      args.pkgs.push(arg);
     }
-    version = semver.format(versionBumps[version as keyof typeof versionBumps](latestVersion));
-    console.log(`Latest version of ${pkg} is ${semver.format(latestVersion)}, bumping to ${version}.`);
   }
 
-  const tagName = `${pkg}@v${version}`;
-  const [denoJson, modified] = await updateDenoJson(pkg, version, dry);
-  if (!dry) {
-    if (modified) {
+  if (args.pkgs.length < 2) {
+    console.error("At least one package name and a version must be provided.");
+    usageAndExit();
+  }
+
+  const version = args.pkgs.pop()!;
+  const releasedVersions: Map<string, string> = new Map();
+
+  for (const pkg of args.pkgs) {
+    let pkgVersion = version;
+    if (version in versionBumps) {
+      const latestVersion = await getLatestVersion(pkg);
+      if (!latestVersion) {
+        console.error(`No previous version found for package ${pkg}.`);
+        Deno.exit(1);
+      }
+      pkgVersion = semver.format(versionBumps[version as keyof typeof versionBumps](latestVersion));
+    }
+
+    releasedVersions.set(pkg, pkgVersion);
+    const [denoJson, modified] = await updateDenoJson(pkg, pkgVersion, dry);
+    if (!dry && modified) {
       await gitAdd([denoJson]);
-      await gitCommit(`Update version of ${pkg} to ${version}`);
     }
-    await gitTag(tagName, force);
-    await gitPush(tagName, force);
   }
 
-  console.log(
-    `Successfully updated version of package '${pkg}' to ${version} and pushed tag '${tagName}' to remote repository.`,
+  const releasesFormatted = Array.from(releasedVersions.entries()).map(([pkg, version]) => `${pkg}@v${version}`).join(
+    ", ",
   );
+  console.log("Releasing", releasesFormatted, "...");
+
+  console.log("Committing changes to Git...");
+  if (!dry) {
+    await gitCommit(`Release ${releasesFormatted}`);
+  }
+
+  const tagNames = args.pkgs.map((pkg) => `${pkg}@v${releasedVersions.get(pkg)}`);
+  console.log("Tagging ", ...tagNames);
+
+  if (!dry) {
+    for (const tag of tagNames) {
+      await gitTag(tag, args.force);
+    }
+  }
+
+  console.log("Pushing tags to remote repository...");
+  if (!dry) {
+    await gitPush(tagNames, args.force);
+  }
+
+  console.log("Success!");
 }
 
 await main();
