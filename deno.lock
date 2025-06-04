@@ -188,10 +188,8 @@
       },
       "packages/helm-v1alpha1": {
         "dependencies": [
-          "jsr:@eemeli/yaml@^2.8.0",
-          "jsr:@gin/core@0.1",
+          "jsr:@gin/core@~0.1.15",
           "jsr:@std/crypto@^1.0.5",
-          "jsr:@std/encoding@^1.0.10",
           "jsr:@std/path@^1.1.0",
           "jsr:@std/yaml@^1.0.7"
         ]

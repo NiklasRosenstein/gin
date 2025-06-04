@@ -3,7 +3,8 @@ import { parseAll, stringify } from "@std/yaml";
 import { FileUrl, GitUrl, parseRepoUrl } from "./repourl.ts";
 import { assert } from "@std/assert/assert";
 import { join } from "@std/path/join";
-import { reconcileSparseCheckout } from "./git.ts";
+import { reconcileSparseCheckout, run } from "./git.ts";
+import { hashToHexdigest } from "@gin/core/util";
 
 /**
  * This Gin custom resource represents a Helm chart that will be templated using the Helm CLI via the
@@ -91,15 +92,56 @@ export class HelmChartAdapter implements ResourceAdapter<UntypedHelmChart> {
 
     let chartPath: string;
     let repoArg: string[] = [];
-    if (repository.startsWith("oci://")) {
+    if (repository.startsWith("oci://") || repository.startsWith("http://") || repository.startsWith("https://")) {
       chartPath = `${repository}/${chart}`;
+      repoArg = ["--repo", String(repository)];
+
+      // Cache the chart with `helm pull` if a version is specified. If no version is specified, we need to check
+      // with the registry for the latest chart each time anyway, so might as well not bother caching it unless
+      // we do some more complicated checks around whether the latest chart is actually the same as the one we have
+      // cached or not.
+      if (version) {
+        const repositoryHashed = await hashToHexdigest("SHA-1", [repository]);
+        const folderName = `${repositoryHashed}-${chart}-${version}`;
+        const chartCacheDir = join(this.cacheDir, "charts", folderName);
+        await Deno.mkdir(chartCacheDir, { recursive: true });
+
+        // Check if the directory has a .tgz file already; if yes, that's the chart.
+        const getSingleTgz = async (dir: string): Promise<string | undefined> => {
+          const entries = await Array.fromAsync(Deno.readDir(dir));
+          const tgzFiles = entries.filter((entry) => entry.isFile && entry.name.endsWith(".tgz"));
+          if (tgzFiles.length === 1) {
+            return join(dir, tgzFiles[0]!.name);
+          }
+        };
+
+        let chartFile = await getSingleTgz(chartCacheDir);
+        if (!chartFile) {
+          console.trace(`Pulling Helm chart '${chart}' version '${version}' from '${repository}' to cache...`);
+          // Ensure the cache directory exists
+          await run(["helm", "pull", "--version", version, "--devel", ...repoArg, chart, "-d", chartCacheDir], {
+            check: true,
+            stderr: "inherit",
+            stdout: "inherit",
+          });
+          chartFile = await getSingleTgz(chartCacheDir);
+          if (!chartFile) {
+            throw new Error(`Failed to pull Helm chart ${chart} version ${version} from ${repository}`);
+          }
+        }
+
+        chartPath = chartFile;
+        repoArg = []; // No need for --repo argument when using a local chart file
+      }
+
+      //   chartPath = `${repository}/${chart}`;
+      // }
+      // else if (repository.startsWith("https://") || repository.startsWith("http://")) {
+      //   chartPath = chart;
+      //   repoArg = ["--repo", String(repository)];
     }
     else if (repository.startsWith("file://")) {
       chartPath = repository.replace("file://", "") + `/${chart}`;
-    }
-    else if (repository.startsWith("https://") || repository.startsWith("http://")) {
-      chartPath = chart;
-      repoArg = ["--repo", String(repository)];
     }
     else if (repository.startsWith("git+")) {
       const repoUrl = parseRepoUrl(repository);

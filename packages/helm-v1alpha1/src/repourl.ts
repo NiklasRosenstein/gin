@@ -1,5 +1,5 @@
 import type { DigestAlgorithm } from "@std/crypto/crypto";
-import { encodeHex } from "@std/encoding/hex";
+import { hashToHexdigest } from "@gin/core/util";
 
 /**
  * Represents a URL to a file on the local filesystem.
@@ -70,9 +70,7 @@ export class GitUrl {
     }
 
     // Create a hash of the URL without query parameters.
-    const parts = new TextEncoder().encode(url.toString() + "/" + (this.path || ""));
-    const hash = await crypto.subtle.digest(algorithm, parts);
-    return encodeHex(hash);
+    return await hashToHexdigest(algorithm, [url.toString(), this.path ?? ""]);
   }
 
   /**

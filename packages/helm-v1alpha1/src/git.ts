@@ -27,11 +27,10 @@ export async function run(command: string[], options: RunOptions = {}): Promise<
   if (!command || command.length === 0) {
     throw new Error("Command must be a non-empty array");
   }
-  const proc = new Deno.Command(command[0]!, {
+  const output = await new Deno.Command(command[0]!, {
     args: command.slice(1),
     ...options,
-  });
-  const output = await proc.output();
+  }).spawn().output();
   if (options.check && output.code !== 0) {
     const stdoutStr = options.stdout == "piped" ? new TextDecoder().decode(output.stdout) : "";
     const stderrStr = options.stderr == "piped" ? new TextDecoder().decode(output.stderr) : "";

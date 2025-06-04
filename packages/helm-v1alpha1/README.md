@@ -79,8 +79,9 @@ The following chart repository protocols are supported:
 
 This package requires the following Deno permissions:
 
-| Permission         | Reason                                                                              |
-| ------------------ | ----------------------------------------------------------------------------------- |
-| `--allow-run=helm` | Required to invoke the `helm` CLI for rendering charts.                             |
-| `--allow-run=git`  | Needed when referencing charts from a Git repository using the `git+(ssh            |
-| `--allow-read`     | Needed to check for folder existence when referencing charts from a Git repository. |
+| Permission         | Reason                                                                   |
+| ------------------ | ------------------------------------------------------------------------ |
+| `--allow-run=helm` | Required to invoke the `helm` CLI for rendering charts.                  |
+| `--allow-run=git`  | Needed when referencing charts from a Git repository using the `git+(ssh |
+| `--allow-read`     | Required for caching.                                                    |
+| `--allow-write`    | Required for caching.                                                    |
