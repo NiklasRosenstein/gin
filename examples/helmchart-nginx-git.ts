@@ -33,7 +33,8 @@ interface IngressNginxValues {
 
 new Gin()
   .withOptions<HelmOptions>({
-    type: "@gin/helm-v1alpha1",
+    pkg: "@gin/helm-v1alpha1",
+    cacheDir: "./helm-cache",
   })
   .run((gin) => {
     gin.emit<HelmChart<IngressNginxValues>>({
