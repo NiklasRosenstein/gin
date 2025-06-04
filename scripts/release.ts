@@ -73,16 +73,16 @@ async function gitPush(tagName: string, force: boolean) {
 
 async function updateDenoJson(pkg: string, version: string, dry: boolean): Promise<[string, boolean]> {
   const denoJsonPath = `packages/${pkg}/deno.json`;
-  const denoJson = JSON.parse(Deno.readTextFileSync(denoJsonPath));
+  const denoJson: { version: string } = JSON.parse(Deno.readTextFileSync(denoJsonPath));
   if (denoJson.version !== version) {
     denoJson.version = version;
     if (!dry) {
       await Deno.writeTextFile(denoJsonPath, JSON.stringify(denoJson, null, 2) + "\n");
     }
     console.log(`Updated version in ${denoJsonPath} to ${version}`);
-    return [denoJson, true];
+    return [denoJsonPath, true];
   }
-  return [denoJson, false];
+  return [denoJsonPath, false];
 }
 
 async function main() {
