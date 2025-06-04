@@ -22,19 +22,19 @@
     "fmt-check": "deno fmt --check",
     "check": "deno check",
     "all": {
+      "command": "deno task test",
       "dependencies": [
         "lint",
         "fmt",
-        "check",
-        "test"
+        "check"
       ]
     },
     "all-check": {
+      "command": "deno task test",
       "dependencies": [
         "lint",
         "fmt-check",
-        "check",
-        "test"
+        "check"
       ]
     }
   }
