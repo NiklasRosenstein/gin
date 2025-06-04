@@ -23,6 +23,7 @@ async function getLatestVersion(pkg: string): Promise<semver.SemVer | undefined>
   const tagList = new TextDecoder().decode(tags.stdout).trim().split("\n");
   return tagList
     .map((tag) => tag.replace(`${pkg}@v`, ""))
+    .filter(tag => !!tag)
     .map(semver.parse)
     .sort(semver.compare)
     .pop();
