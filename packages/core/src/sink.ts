@@ -1,5 +1,5 @@
 import type { KubernetesObject } from "./mod.ts";
-import { stringify } from "@eemeli/yaml";
+import { stringify } from "@std/yaml";
 
 /**
  * Sink interface for emitted Kubernetes resources. A sink receives all resources that are passed to {@link Gin#emit},
@@ -52,7 +52,7 @@ export class StdoutSink implements Sink {
     }
 
     console.log("---");
-    console.log(stringify(resourceCopy, null, 2));
+    console.log(stringify(resourceCopy, { indent: 2 }));
 
     return Promise.resolve();
   }
