@@ -1,6 +1,6 @@
-This package provides a `WebApp` Gin custom resource that is a simple abstraction for describing stateless Web
-applications that will unfold into a `Deployment`, `Service`, and `Ingress` resource, as well as a `Secret` if the
-`.spec.secretEnv` field is set.
+This package provides the `WebApp` Gin custom resource, a straightforward abstraction for defining stateless web
+applications. When used, it generates a `Deployment`, `Service`, and `Ingress` resource, and also creates a `Secret` if
+the `.spec.secretEnv` field is specified.
 
 [cert-manager]: https://cert-manager.io/
 
