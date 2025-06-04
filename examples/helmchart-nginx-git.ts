@@ -34,7 +34,7 @@ interface IngressNginxValues {
 new Gin()
   .withOptions<HelmOptions>({
     pkg: "@gin/helm-v1alpha1",
-    cacheDir: "./helm-cache",
+    cacheDir: ".gin/cache/helm", // NOTE: This is also the default value
   })
   .run((gin) => {
     gin.emit<HelmChart<IngressNginxValues>>({
