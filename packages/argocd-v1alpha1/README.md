@@ -6,7 +6,7 @@ configuration options and some convenient extras, as well as exposing access to 
 - Easily bootstrap ArgoCD and then have it manage itself in your Kubernetes cluster.
 - Configure [ConfigManagementPlugins][ConfigManagementPlugins] with a simple API.
 - Templates for ArgoCD `Application` and `ApplicationSet` resources for various use cases, as well as configuration for
-  [Private repositories][Private repositories] (WIP).
+  [Private repositories][] (WIP).
 
 > **Note**: Unless you want to use this package solely for bootstrapping ArgoCD, you likely want to install the
 > [`gin-argocd`][gin-argocd] CMP, which allows you to invoke Deno scripts to generate Kubernetes resources and thus make
