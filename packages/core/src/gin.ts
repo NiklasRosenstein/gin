@@ -313,7 +313,7 @@ export class Gin {
       // and drop any `undefined` values as they cannot be stringified to YAML.
       const finalResource = dropUndefined(replaceValues(resource, (val) => {
         if (val instanceof SecretValue) {
-          return val.toString();
+          return val.secretValue;
         }
         return val;
       }));
