@@ -190,17 +190,31 @@ export class ArgoCDDeploymentAdapter implements ResourceAdapter<ArgoCDDeployment
           name: cmp.name,
           image: cmp.image,
           imagePullPolicy: cmp.imagePullPolicy || "IfNotPresent",
+          securityContext: {
+            runAsNonRoot: true,
+            runAsUser: 999,
+          },
           env: Object.entries(cmp.env || {}).map(([key, value]) => ({
             name: key,
             value: value,
           })),
-          envFrom: cmp.secretEnv
+          envFrom: cmp.secretEnv && Object.keys(cmp.secretEnv).length > 0
             ? [{
               secretRef: {
                 name: `argocd-cmp-${cmp.name}`,
               },
             }]
             : [],
+          volumeMounts: [
+            {
+              name: "cmp-tmp",
+              mountPath: "/tmp",
+            },
+            {
+              name: "var-files",
+              mountPath: "/home/argocd/cmp-server/plugins",
+            },
+          ],
         });
 
         if (cmp.secretEnv && Object.keys(cmp.secretEnv).length > 0) {

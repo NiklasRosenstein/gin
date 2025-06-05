@@ -106,6 +106,20 @@ Deno.test("ArgoCDDeploymentAdapter", async () => {
                     },
                   },
                 ],
+                "securityContext": {
+                  "runAsNonRoot": true,
+                  "runAsUser": 999,
+                },
+                "volumeMounts": [
+                  {
+                    "mountPath": "/tmp",
+                    "name": "cmp-tmp",
+                  },
+                  {
+                    "mountPath": "/home/argocd/cmp-server/plugins",
+                    "name": "var-files",
+                  },
+                ],
               },
             ],
           },
