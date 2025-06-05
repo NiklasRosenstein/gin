@@ -4,6 +4,8 @@
     "jsr:@eemeli/yaml@^2.8.0": "2.8.0",
     "jsr:@gin/core@0.1": "0.1.2",
     "jsr:@gin/core@~0.1.11": "0.1.11",
+    "jsr:@gin/core@~0.1.16": "0.1.16",
+    "jsr:@gin/helm-v1alpha1@~0.1.6": "0.1.6",
     "jsr:@std/assert@^1.0.13": "1.0.13",
     "jsr:@std/cli@^1.0.19": "1.0.19",
     "jsr:@std/crypto@^1.0.5": "1.0.5",
@@ -14,6 +16,7 @@
     "jsr:@std/semver@1": "1.0.5",
     "jsr:@std/yaml@*": "1.0.7",
     "jsr:@std/yaml@^1.0.7": "1.0.7",
+    "jsr:@stdext/crypto@*": "0.1.0",
     "npm:@types/node@*": "22.12.0",
     "npm:jsonpath-plus@*": "10.3.0_jsep@1.4.0",
     "npm:jsonpath-plus@^10.3.0": "10.3.0_jsep@1.4.0",
@@ -39,6 +42,25 @@
         "jsr:@std/regexp",
         "jsr:@std/yaml@^1.0.7",
         "npm:stacktracey"
+      ]
+    },
+    "@gin/core@0.1.16": {
+      "integrity": "a0b8bf5fb62a3fe5644e9fc6fa6bbf3f1fd6c8e4bd2568051cd665cbd2c95eff",
+      "dependencies": [
+        "jsr:@std/assert",
+        "jsr:@std/cli",
+        "jsr:@std/encoding",
+        "jsr:@std/regexp",
+        "jsr:@std/yaml@^1.0.7",
+        "npm:stacktracey"
+      ]
+    },
+    "@gin/helm-v1alpha1@0.1.6": {
+      "integrity": "92818978031107c7af994c01e7a000dc7fc6ea6392fb67549221f0f504095a54",
+      "dependencies": [
+        "jsr:@std/assert",
+        "jsr:@std/path",
+        "jsr:@std/yaml@^1.0.7"
       ]
     },
     "@std/assert@1.0.13": {
@@ -70,6 +92,9 @@
     },
     "@std/yaml@1.0.7": {
       "integrity": "b4b9f6a625a6827ca2b75a3d240558b5ffd8b9a29945ec7614871be7b711a10a"
+    },
+    "@stdext/crypto@0.1.0": {
+      "integrity": "05dc9e754c2529574d8bf98bd40c7dc468a02dcb2fa5e8644fff6813ceab66a4"
     }
   },
   "npm": {
@@ -176,6 +201,13 @@
       "jsr:@std/assert@^1.0.13"
     ],
     "members": {
+      "packages/argocd-v1alpha1": {
+        "dependencies": [
+          "jsr:@gin/core@~0.1.16",
+          "jsr:@gin/helm-v1alpha1@~0.1.6",
+          "jsr:@std/assert@^1.0.13"
+        ]
+      },
       "packages/core": {
         "dependencies": [
           "jsr:@std/cli@^1.0.19",
@@ -188,7 +220,7 @@
       },
       "packages/helm-v1alpha1": {
         "dependencies": [
-          "jsr:@gin/core@~0.1.15",
+          "jsr:@gin/core@~0.1.16",
           "jsr:@std/crypto@^1.0.5",
           "jsr:@std/path@^1.1.0",
           "jsr:@std/yaml@^1.0.7"
