@@ -1,0 +1,63 @@
+# To be put in /home/argocd/cmp-server/config/plugin.yaml
+# Read also https://argo-cd.readthedocs.io/en/stable/operator-manual/config-management-plugins/#sidecar-plugin
+
+apiVersion: argoproj.io/v1alpha1
+kind: ConfigManagementPlugin
+metadata:
+  name: gin
+spec:
+  version: v1
+  preserveFileMode: false
+  generate:
+    command:
+      - deno
+      - run
+      - --allow-env
+      - --allow-run=deno
+      - /gin-argocd/entrypoint.ts
+  parameters:
+    static:
+      - name: script
+        title: Path to the TypeScript file to run with Deno. Expected to generate the ArgoCD manifests.
+        required: true
+        itemType: string
+      - name: args
+        title: Additional arguments to pass to the script.
+        required: false
+        itemType: string
+        array: []
+      - name: deno_allow_all
+        title: Pass `--allow-all` when the Deno command is run.
+        required: false
+        itemType: boolean
+        string: "false"
+      - name: deno_allow_net
+        title: Pass `--allow-net` when the Deno command is run. Set to `*` to allow all network access.
+        required: false
+        itemType: string
+        array: []
+      - name: deno_allow_read
+        title: Pass `--allow-read` when the Deno command is run. Set to `*` to allow reading all files.
+        required: false
+        itemType: string
+        array: []
+      - name: deno_allow_write
+        title: Pass `--allow-write` when the Deno command is run. Set to `*` to allow writing all files.
+        required: false
+        itemType: string
+        array: []
+      - name: deno_allow_env
+        title: Pass `--allow-env` when the Deno command is run. Set to `*` to allow all environment variables.
+        required: false
+        itemType: string
+        array: []
+      - name: deno_allow_run
+        title: Pass `--allow-run` when the Deno command is run. Set to `*` to allow running all subprocesses.
+        required: false
+        itemType: string
+        array: []
+      - name: deno_allow_import
+        title: Pass `--allow-import` when the Deno command is run. Set to `*` to allow importing all hosts.
+        required: false
+        itemType: string
+        array: []
