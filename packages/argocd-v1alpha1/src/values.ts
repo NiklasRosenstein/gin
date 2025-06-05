@@ -18,6 +18,7 @@ Follow these guidelines:
 1. **Structure & Interface Design:**
   - Create the main exported interface named `ArgoCDChartValues`.
   - Output an `IngressConfig` interface for the server ingress configuration
+  - Export all interfaces
   - Choose interface names that logically reflect the structure and hierarchy of the Helm values file.
   - Some example names include: `ServerConfig`, `IngressConfig`, `RepoServerConfig`, `ArgoCDConfigs`,
     `GlobalConfig`, `PDBConfig`, `ImageConfig`, etc.
@@ -53,7 +54,7 @@ import type { SecretValue } from "@gin/core";
 /**
  * Represents a Kubernetes resource requirement.
  */
-interface KubeResourceRequirement {
+export interface KubeResourceRequirement {
   /**
    * Describes the maximum amount of compute resources allowed.
    */
@@ -68,7 +69,7 @@ interface KubeResourceRequirement {
  * Configuration for readiness or liveness probes.
  * Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
  */
-interface ProbeConfig {
+export interface ProbeConfig {
   /**
    * Minimum consecutive failures for the [probe] to be considered failed after having succeeded
    */
@@ -95,7 +96,7 @@ interface ProbeConfig {
  * PodDisruptionBudget configuration.
  * Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
  */
-interface PDBConfig {
+export interface PDBConfig {
   /**
    * Deploy a [PodDisruptionBudget].
    */
@@ -124,7 +125,7 @@ interface PDBConfig {
  * Kubernetes Volume configuration.
  * Ref: https://kubernetes.io/docs/concepts/storage/volumes/
  */
-interface Volume {
+export interface Volume {
   name: string;
   [key: string]: unknown;
 }
@@ -133,7 +134,7 @@ interface Volume {
  * Kubernetes VolumeMount configuration.
  * Ref: https://kubernetes.io/docs/concepts/storage/volumes/
  */
-interface VolumeMount {
+export interface VolumeMount {
   name: string;
   mountPath: string;
   subPath?: string;
@@ -144,7 +145,7 @@ interface VolumeMount {
  * Kubernetes container-level security context.
  * Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
  */
-interface ContainerSecurityContext {
+export interface ContainerSecurityContext {
   runAsNonRoot?: boolean;
   readOnlyRootFilesystem?: boolean;
   allowPrivilegeEscalation?: boolean;
@@ -163,7 +164,7 @@ interface ContainerSecurityContext {
  * Kubernetes pod-level security context.
  * Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
  */
-interface PodSecurityContext {
+export interface PodSecurityContext {
   runAsUser?: number;
   runAsGroup?: number;
   fsGroup?: number;
@@ -178,7 +179,7 @@ interface PodSecurityContext {
  * Kubernetes toleration configuration.
  * Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
  */
-interface Toleration {
+export interface Toleration {
   key?: string;
   operator?: string;
   value?: string;
@@ -190,7 +191,7 @@ interface Toleration {
  * Configuration for Horizontal Pod Autoscaler.
  * Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
  */
-interface HPAConfig {
+export interface HPAConfig {
   /**
    * Enable Horizontal Pod Autoscaler ([HPA]).
    */
@@ -225,7 +226,7 @@ interface HPAConfig {
 /**
  * A single an ingress host configuration.
  */
-interface IngressHost {
+export interface IngressHost {
   name: string;
   path: string;
 }
@@ -233,7 +234,7 @@ interface IngressHost {
 /**
  * A single ingress path configuration.
  */
-interface IngressPath {
+export interface IngressPath {
   path: string;
   pathType: "Exact" | "Prefix" | "ImplementationSpecific";
   backend: {
@@ -249,7 +250,7 @@ interface IngressPath {
 /**
  * A single ingress rule configuration.
  */
-interface IngressRule {
+export interface IngressRule {
   http: {
     paths: IngressPath[];
   };
@@ -258,7 +259,7 @@ interface IngressRule {
 /**
  * A single ingress TLS configuration.
  */
-interface IngressTLS {
+export interface IngressTLS {
   hosts: string[];
   secretName: string;
 }
@@ -266,7 +267,7 @@ interface IngressTLS {
 /**
  * Defines the structure for Prometheus ServiceMonitor.
  */
-interface ServiceMonitorConfig {
+export interface ServiceMonitorConfig {
   /**
    * Enable a prometheus ServiceMonitor.
    */
@@ -324,7 +325,7 @@ interface ServiceMonitorConfig {
 /**
  * Image configuration.
  */
-interface ImageConfig {
+export interface ImageConfig {
   /**
    * If defined, a repository applied to all Argo CD deployments.
    */
@@ -342,7 +343,7 @@ interface ImageConfig {
 /**
  * Logging configuration.
  */
-interface LoggingConfig {
+export interface LoggingConfig {
   /**
    * Set the global logging format. Either: `text` or `json`.
    */
@@ -356,7 +357,7 @@ interface LoggingConfig {
 /**
  * Affinity configuration.
  */
-interface AffinityConfig {
+export interface AffinityConfig {
   /**
    * Default pod anti-affinity rules. Either: `none`, `soft` or `hard`.
    */
@@ -384,7 +385,7 @@ interface AffinityConfig {
  * Topology spread constraint configuration.
  * Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
  */
-interface TopologySpreadConstraint {
+export interface TopologySpreadConstraint {
   maxSkew?: number;
   topologyKey: string;
   whenUnsatisfiable: "DoNotSchedule" | "ScheduleAnyway";
@@ -395,7 +396,7 @@ interface TopologySpreadConstraint {
  * Configuration for `argocd-cm` ConfigMap.
  * Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cm.yaml
  */
-interface CMConfig {
+export interface CMConfig {
   /**
    * Create the argocd-cm configmap for [declarative setup].
    */
@@ -507,7 +508,7 @@ interface CMConfig {
  * Argo CD command parameters configuration.
  * Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cmd-params-cm.yaml
  */
-interface ParamsConfig {
+export interface ParamsConfig {
   /**
    * Create the argocd-cmd-params-cm configmap.
    * If false, it is expected the configmap will be created by something else.
@@ -616,7 +617,7 @@ interface ParamsConfig {
  * Argo CD RBAC policy configuration.
  * Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/rbac.md
  */
-interface RBACConfig {
+export interface RBACConfig {
   /**
    * Create the argocd-rbac-cm configmap with ([Argo CD RBAC policy]) definitions.
    * If false, it is expected the configmap will be created by something else.
@@ -652,7 +653,7 @@ interface RBACConfig {
  * GnuPG public keys for commit verification.
  * Ref: https://argo-cd.readthedocs.io/en/stable/user-guide/gpg-verification/
  */
-interface GPGConfig {
+export interface GPGConfig {
   /**
    * Annotations to be added to argocd-gpg-keys-cm configmap.
    */
@@ -669,7 +670,7 @@ interface GPGConfig {
  * SSH known hosts for Git repositories.
  * Ref: https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#ssh-known-host-public-keys
  */
-interface SSHConfig {
+export interface SSHConfig {
   /**
    * Specifies if the argocd-ssh-known-hosts-cm configmap should be created by Helm.
    */
@@ -693,7 +694,7 @@ interface SSHConfig {
  * Repository TLS certificates.
  * Ref: https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#repositories-using-self-signed-tls-certificates-or-are-signed-by-custom-ca
  */
-interface TLSConfig {
+export interface TLSConfig {
   /**
    * Annotations to be added to argocd-tls-certs-cm configmap.
    */
@@ -713,7 +714,7 @@ interface TLSConfig {
  * ConfigMap for Config Management Plugins.
  * Ref: https://argo-cd.readthedocs.io/en/stable/operator-manual/config-management-plugins/
  */
-interface CMPConfig {
+export interface CMPConfig {
   /**
    * Create the argocd-cmp-cm configmap.
    */
@@ -731,7 +732,7 @@ interface CMPConfig {
 /**
  * Configuration for a single external cluster credential.
  */
-interface ClusterCredential {
+export interface ClusterCredential {
   server: string;
   labels?: Record<string, string>;
   annotations?: Record<string, string>;
@@ -751,7 +752,7 @@ interface ClusterCredential {
 /**
  * Configuration for a repository credential template.
  */
-interface CredentialTemplate {
+export interface CredentialTemplate {
   url: string;
   githubAppID?: number;
   githubAppInstallationID?: number;
@@ -765,7 +766,7 @@ interface CredentialTemplate {
 /**
  * Configuration for a single repository.
  */
-interface Repository {
+export interface Repository {
   url: string;
   name?: string;
   type?: "helm" | "git";
@@ -777,7 +778,7 @@ interface Repository {
  * Argo CD sensitive data configuration.
  * Ref: https://argo-cd.readthedocs.io/en/stable/operator-manual/user-management/#sensitive-data-and-sso-client-secrets
  */
-interface SecretConfig {
+export interface SecretConfig {
   /**
    * Create the argocd-secret.
    */
@@ -846,7 +847,7 @@ interface SecretConfig {
 /**
  * Argo CD configuration.
  */
-interface ArgoCDConfigs {
+export interface ArgoCDConfigs {
   /**
    * General Argo CD configuration. Any values you put under `.configs.cm` are passed to argocd-cm ConfigMap.
    * {@link CMConfig}
@@ -927,7 +928,7 @@ interface ArgoCDConfigs {
 /**
  * Service account configuration.
  */
-interface ServiceAccountConfig {
+export interface ServiceAccountConfig {
   /**
    * Create a service account.
    */
@@ -953,7 +954,7 @@ interface ServiceAccountConfig {
 /**
  * Globally shared configuration.
  */
-interface GlobalConfig {
+export interface GlobalConfig {
   /**
    * Default domain used by all components.
    * Used for ingresses, certificates, SSO, notifications, etc.
@@ -1087,7 +1088,7 @@ interface GlobalConfig {
 /**
  * Controller metrics configuration.
  */
-interface ControllerMetricsConfig {
+export interface ControllerMetricsConfig {
   /**
    * Deploy metrics service.
    */
@@ -1168,7 +1169,7 @@ interface ControllerMetricsConfig {
 /**
  * Application controller configuration.
  */
-interface ControllerConfig {
+export interface ControllerConfig {
   /**
    * Application controller name string.
    */
@@ -1378,7 +1379,7 @@ interface ControllerConfig {
 /**
  * Dex server configuration.
  */
-interface DexConfig {
+export interface DexConfig {
   /**
    * Enable dex.
    */
@@ -1659,7 +1660,7 @@ interface DexConfig {
 /**
  * Redis configuration.
  */
-interface RedisConfig {
+export interface RedisConfig {
   /**
    * Enable redis.
    */
@@ -1916,7 +1917,7 @@ interface RedisConfig {
  * Redis-HA subchart configuration.
  * Ref: https://github.com/DandyDeveloper/charts/blob/master/charts/redis-ha/values.yaml
  */
-interface RedisHAConfig {
+export interface RedisHAConfig {
   /**
    * Enables the Redis HA subchart and disables the custom Redis single node deployment.
    */
@@ -2081,7 +2082,7 @@ interface RedisHAConfig {
  * AWS specific options for Application Load Balancer.
  * Ref: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#aws-application-load-balancers-albs-and-classic-elb-http-mode
  */
-interface IngressAWSConfig {
+export interface IngressAWSConfig {
   /**
    * Backend protocol version for the AWS ALB gRPC service.
    * This tells AWS to send traffic from the ALB using gRPC.
@@ -2101,7 +2102,7 @@ interface IngressAWSConfig {
  * Google specific options for Google Application Load Balancer.
  * Ref: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#google-cloud-load-balancers-with-kubernetes-ingress
  */
-interface IngressGKEConfig {
+export interface IngressGKEConfig {
   /**
    * Google [BackendConfig] resource, for use with the GKE Ingress Controller.
    * @default {} (See [values.yaml])
@@ -2216,7 +2217,7 @@ export interface IngressConfig {
 /**
  * Certificate configuration using cert-manager.
  */
-interface CertManagerCertificateConfig {
+export interface CertManagerCertificateConfig {
   /**
    * Deploy a Certificate resource (requires cert-manager).
    */
@@ -2299,7 +2300,7 @@ interface CertManagerCertificateConfig {
 /**
  * Argo CD server configuration.
  */
-interface ServerConfig {
+export interface ServerConfig {
   /**
    * Argo CD server name.
    */
@@ -2731,7 +2732,7 @@ interface ServerConfig {
 /**
  * Repo server configuration.
  */
-interface RepoServerConfig {
+export interface RepoServerConfig {
   /**
    * Repo server name.
    */
@@ -3043,7 +3044,7 @@ interface RepoServerConfig {
 /**
  * ApplicationSet controller configuration.
  */
-interface ApplicationSetControllerConfig {
+export interface ApplicationSetControllerConfig {
   /**
    * ApplicationSet controller name string.
    */
@@ -3306,7 +3307,7 @@ interface ApplicationSetControllerConfig {
 /**
  * Notifications controller configuration.
  */
-interface NotificationsConfig {
+export interface NotificationsConfig {
   /**
    * Enable notifications controller.
    */
@@ -3576,7 +3577,7 @@ interface NotificationsConfig {
 /**
  * Commit server configuration.
  */
-interface CommitServerConfig {
+export interface CommitServerConfig {
   /**
    * Enable commit server.
    */
