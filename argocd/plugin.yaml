@@ -1,0 +1,80 @@
+# To be put in /home/argocd/cmp-server/config/plugin.yaml
+# Read also https://argo-cd.readthedocs.io/en/stable/operator-manual/config-management-plugins/#sidecar-plugin
+
+apiVersion: argoproj.io/v1alpha1
+kind: ConfigManagementPlugin
+metadata:
+  name: gin
+spec:
+  version: v1
+  preserveFileMode: false
+  generate:
+    command:
+      - deno
+      - run
+      - --allow-env
+      - --allow-run # =deno does not work, needs the full path? path to the symlink its run from doesn't seem to work either
+      - --allow-read # Only needed for Deno.execPath(); can be removed after https://github.com/denoland/deno/pull/29620
+      - /gin-argocd/entrypoint.ts
+  parameters:
+    static:
+      - name: script
+        title: Script
+        tooltip: Path to the TypeScript file to run with Deno. Expected to generate the ArgoCD manifests.
+        required: true
+        itemType: string
+      - name: args
+        title: Args
+        tooltip: Additional arguments to pass to the script.
+        required: false
+        itemType: string
+        collectionType: array
+        array: []
+      - name: deno_allow_all
+        title: Deno Allow All
+        tooltip: Pass `--allow-all` when the Deno command is run.
+        required: false
+        itemType: boolean
+        string: "false"
+      - name: deno_allow_net
+        title: Deno Allow Net
+        tooltip: Pass `--allow-net` when the Deno command is run. Set to `*` to allow all network access.
+        required: false
+        itemType: string
+        collectionType: array
+        array: []
+      - name: deno_allow_read
+        title: Deno Allow Read
+        tooltip: Pass `--allow-read` when the Deno command is run. Set to `*` to allow reading all files.
+        required: false
+        itemType: string
+        collectionType: array
+        array: []
+      - name: deno_allow_write
+        title: Deno Allow Write
+        tooltip: Pass `--allow-write` when the Deno command is run. Set to `*` to allow writing all files.
+        required: false
+        itemType: string
+        collectionType: array
+        array: []
+      - name: deno_allow_env
+        title: Deno Allow Env
+        tooltip: Pass `--allow-env` when the Deno command is run. Set to `*` to allow all environment variables.
+        required: false
+        itemType: string
+        collectionType: array
+        array: []
+      - name: deno_allow_run
+        title: Deno Allow Run
+        tooltip: Pass `--allow-run` when the Deno command is run. Set to `*` to allow running all subprocesses.
+        required: false
+        itemType: string
+        collectionType: array
+        array: []
+      - name: deno_allow_import
+        title: Deno Allow Import
+        tooltip: Pass `--allow-import` when the Deno command is run. Set to `*` to allow importing all hosts.
+        required: false
+        itemType: string
+        collectionType: array
+        array: []

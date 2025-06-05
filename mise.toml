@@ -2,3 +2,4 @@
 deno = "2"
 helm = "latest"
 kubectl = "latest"
+sops = "latest"
