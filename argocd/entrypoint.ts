@@ -31,7 +31,7 @@ type RawParameters = {
   string?: string;
   array?: string[];
   map?: Record<string, string>;
-}[];
+}[] | null;
 
 /**
  * Parameters for our ArgoCD application.
@@ -53,7 +53,12 @@ interface Parameters {
  */
 export function parseParameters(parameters?: RawParameters): Parameters {
   if (!parameters) {
-    parameters = JSON.parse(expect(Deno.env.get("ARGOCD_APP_PARAMETERS"), "ARGOCD_APP_PARAMETERS not set"));
+    parameters = JSON.parse(expect(Deno.env.get("ARGOCD_APP_PARAMETERS"), "ARGOCD_APP_PARAMETERS not set")) as RawParameters;
+    console.warn("ArgoCD Deno Entrypoint: Using parameters from ARGOCD_APP_PARAMETERS environment variable:", parameters);
+  }
+
+  if (parameters === null) {
+    parameters = [];
   }
 
   const popBoolean = (name: string): boolean | undefined => {
