@@ -146,9 +146,14 @@ export function deepClone<T>(obj: T): T {
 export function replaceValues<T>(
   obj: T,
   mappingFn: (value: unknown) => unknown,
+  order: "pre" | "post" = "pre",
 ): T {
+  if (order == "pre") {
+    obj = mappingFn(obj) as T;
+  }
+
   if (Array.isArray(obj)) {
-    return obj.map((item) => replaceValues(item, mappingFn)) as unknown as T;
+    obj = obj.map((item) => replaceValues(item, mappingFn)) as unknown as T;
   }
   else if (obj && typeof obj === "object") {
     const newObj = {} as Record<string, unknown>;
@@ -156,11 +161,14 @@ export function replaceValues<T>(
     for (const [key, value] of Object.entries(obj)) {
       newObj[key] = replaceValues(value, mappingFn);
     }
-    return newObj as T;
+    obj = newObj as T;
   }
-  else {
-    return mappingFn(obj) as T;
+
+  if (order == "post") {
+    obj = mappingFn(obj) as T;
   }
+
+  return obj;
 }
 
 /**

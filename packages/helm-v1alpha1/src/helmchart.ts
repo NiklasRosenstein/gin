@@ -1,10 +1,10 @@
-import type { Gin, KubernetesObject, ResourceAdapter } from "@gin/core";
+import { type Gin, type KubernetesObject, type ResourceAdapter, SecretValue } from "@gin/core";
 import { parseAll, stringify } from "@std/yaml";
 import { FileUrl, GitUrl, parseRepoUrl } from "./repourl.ts";
 import { assert } from "@std/assert/assert";
 import { join } from "@std/path/join";
 import { reconcileSparseCheckout, run } from "./git.ts";
-import { hashToHexdigest } from "@gin/core/util";
+import { hashToHexdigest, replaceValues } from "@gin/core/util";
 
 /**
  * This Gin custom resource represents a Helm chart that will be templated using the Helm CLI via the
@@ -48,7 +48,7 @@ export interface HelmChart<T> extends KubernetesObject {
     version?: string;
 
     /**
-     * Values to pass to the Helm chart.
+     * Values to pass to the Helm chart. Values of type {@link SecretValue} are accepted.
      */
     values?: T;
   };
@@ -88,13 +88,18 @@ export class HelmChartAdapter implements ResourceAdapter<UntypedHelmChart> {
   }
 
   async generate(_gin: Gin, resource: UntypedHelmChart): Promise<KubernetesObject[]> {
-    const { repository, chart, version, values } = resource.spec;
+    const { repository, chart, version } = resource.spec;
 
     let chartPath: string;
     let repoArg: string[] = [];
     if (repository.startsWith("oci://") || repository.startsWith("http://") || repository.startsWith("https://")) {
-      chartPath = `${repository}/${chart}`;
-      repoArg = ["--repo", String(repository)];
+      if (repository.startsWith("oci://")) {
+        chartPath = `${repository}/${chart}`;
+      }
+      else {
+        chartPath = chart;
+        repoArg = ["--repo", repository];
+      }
 
       // Cache the chart with `helm pull` if a version is specified. If no version is specified, we need to check
       // with the registry for the latest chart each time anyway, so might as well not bother caching it unless
@@ -119,7 +124,7 @@ export class HelmChartAdapter implements ResourceAdapter<UntypedHelmChart> {
         if (!chartFile) {
           console.trace(`Pulling Helm chart '${chart}' version '${version}' from '${repository}' to cache...`);
           // Ensure the cache directory exists
-          await run(["helm", "pull", "--version", version, "--devel", ...repoArg, chart, "-d", chartCacheDir], {
+          await run(["helm", "pull", "--version", version, "--devel", ...repoArg, chartPath, "-d", chartCacheDir], {
             check: true,
             stderr: "inherit",
             stdout: "inherit",
@@ -133,12 +138,6 @@ export class HelmChartAdapter implements ResourceAdapter<UntypedHelmChart> {
         chartPath = chartFile;
         repoArg = []; // No need for --repo argument when using a local chart file
       }
-
-      //   chartPath = `${repository}/${chart}`;
-      // }
-      // else if (repository.startsWith("https://") || repository.startsWith("http://")) {
-      //   chartPath = chart;
-      //   repoArg = ["--repo", String(repository)];
     }
     else if (repository.startsWith("file://")) {
       chartPath = repository.replace("file://", "") + `/${chart}`;
@@ -168,6 +167,14 @@ export class HelmChartAdapter implements ResourceAdapter<UntypedHelmChart> {
     else {
       throw new Error(`Unsupported repository protocol: ${repository}`);
     }
+
+    // Replace SecretValue instances in the values.
+    const values = replaceValues(resource.spec.values || {}, (val) => {
+      if (val instanceof SecretValue) {
+        return val.secretValue;
+      }
+      return val;
+    });
 
     const versionArg = version ? ["--version", String(version), "--devel"] : [];
 
