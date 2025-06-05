@@ -19,7 +19,7 @@ RUN ln -s $(mise which argocd) /mise/shims/argocd-cmp-server
 COPY entrypoint.ts ./
 
 WORKDIR /home/argocd/cmp-server/config/
-COPY plugin.yaml /
+COPY plugin.yaml ./
 WORKDIR /home/argocd
 VOLUME /home/argocd/cmp-server/plugins/
 ENTRYPOINT [ "/mise/shims/argocd-cmp-server" ]
