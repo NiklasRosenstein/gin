@@ -14,7 +14,7 @@ spec:
       - run
       - --allow-env
       - --allow-run=deno
-      - --allow-read=/usr/local/bin/deno
+      - --allow-read # <exec_path> or /usr/local/bin/deno does not work, but we only need it for Deno.execPath()
       - /gin-argocd/entrypoint.ts
   parameters:
     static:
