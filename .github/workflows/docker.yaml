@@ -35,7 +35,14 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}/gin-argocd
           flavor: latest=true
-          tags: type=sha
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
