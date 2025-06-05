@@ -14,6 +14,13 @@ export class SecretValue<T = string> {
     return "[SecretValue]";
   }
 
+  equals(other: SecretValue<T>): boolean {
+    if (!(other instanceof SecretValue)) {
+      return false;
+    }
+    return this.secretValue === other.secretValue;
+  }
+
   /**
    * Prevent the secret value from being logged or printed in any way, even with `console.log()`.
    */
