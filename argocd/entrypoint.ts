@@ -67,37 +67,40 @@ export function parseParameters(parameters?: RawParameters): Parameters {
   }
 
   const popBoolean = (name: string): boolean | undefined => {
-    const idx = parameters!.findIndex((p) => p.name === name);
-    if (idx === -1) {
-      return undefined;
-    }
-    const param = parameters![idx];
-    if (param?.string) {
-      parameters!.splice(idx, 1);
-      if (param.string === "true") {
+    const value = popString(name, "boolish string");
+    if (value !== undefined) {
+      if (value === "true") {
         return true;
       }
-      else if (param.string === "false") {
+      else if (value === "false") {
         return false;
       }
       else {
-        throw new Error(`Invalid boolean value for ${name}: ${param.string}`);
+        throw new Error(`Invalid boolean value for ${name}: ${value}`);
       }
     }
-    throw new Error(`Expected boolean-string for ${name}, but found: ${JSON.stringify(param)}`);
+    throw new Error(`Expected boolish string for ${name}, but found: ${JSON.stringify(value)}`);
   };
 
-  const popString = (name: string): string | undefined => {
+  const popString = (name: string, expected: string = "string"): string | undefined => {
     const index = parameters!.findIndex((p) => p.name === name);
     if (index === -1) {
       return undefined;
     }
     const param = parameters![index];
+
+    // When clearing parameter values in the ArgoCD UI, it may remain behind as an empty string value.
+    if (param?.string == "") {
+      parameters!.splice(index, 1);
+      return undefined;
+    }
+
     if (param?.string) {
       parameters!.splice(index, 1);
       return param.string;
     }
-    throw new Error(`Expected string for ${name}, but found: ${JSON.stringify(param)}`);
+
+    throw new Error(`Expected ${expected} for ${name}, but found: ${JSON.stringify(param)}`);
   };
 
   const popArray = (name: string): string[] | undefined => {
