@@ -1,9 +1,10 @@
 {
   "name": "@gin/argocd-v1alpha1",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "exports": {
     ".": "./src/mod.ts",
-    "./values": "./src/values.ts"
+    "./values": "./src/values.ts",
+    "./ArgoCDDeployment": "./src/ArgoCDDeployment.ts"
   },
   "license": "MIT",
   "imports": {
