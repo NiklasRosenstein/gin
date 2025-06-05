@@ -79,7 +79,6 @@ export function parseParameters(parameters?: RawParameters): Parameters {
         throw new Error(`Invalid boolean value for ${name}: ${value}`);
       }
     }
-    throw new Error(`Expected boolish string for ${name}, but found: ${JSON.stringify(value)}`);
   };
 
   const popString = (name: string, expected: string = "string"): string | undefined => {
