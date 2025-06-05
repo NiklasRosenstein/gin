@@ -123,7 +123,16 @@ export function parseParameters(parameters?: RawParameters): Parameters {
 }
 
 async function main() {
+  console.warn("ArgoCD Deno Entrypoint: Starting...");
+  for (const [key, value] of Object.entries(Deno.env.toObject())) {
+    if (key.startsWith("ARGOCD_") || key.startsWith("PARAM_")) {
+      console.warn(`${key}=${value}`);
+    }
+  }
+
+  console.warn("ArgoCD Deno Entrypoint: Parsing parameters...");
   const params = parseParameters();
+  console.warn("ArgoCD Deno Entrypoint: Parsed parameters:", params);
   const args = [
     ...(params.deno_allow_all ? ["--allow-all"] : []),
     ...formatAllowArg("net", params.deno_allow_net),
