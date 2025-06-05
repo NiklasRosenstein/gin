@@ -25,6 +25,9 @@ export interface ArgoCDDeployment extends KubernetesObject {
   spec: ArgoCDDeploymentSpec;
 }
 
+/**
+ * Type for {@link ArgoCDDeployment#spec}.
+ */
 export interface ArgoCDDeploymentSpec {
   /**
    * Reference to the Helm chart to use for ArgoCD. The defaults should work in 99% of cases, but if you are in
