@@ -20,54 +20,61 @@ spec:
     static:
       - name: script
         title: Script
-        description: Path to the TypeScript file to run with Deno. Expected to generate the ArgoCD manifests.
+        tooltip: Path to the TypeScript file to run with Deno. Expected to generate the ArgoCD manifests.
         required: true
         itemType: string
       - name: args
         title: Args
-        description: Additional arguments to pass to the script.
+        tooltip: Additional arguments to pass to the script.
         required: false
         itemType: string
+        collectionType: array
         array: []
       - name: deno_allow_all
         title: Deno Allow All
-        description: Pass `--allow-all` when the Deno command is run.
+        tooltip: Pass `--allow-all` when the Deno command is run.
         required: false
         itemType: boolean
         string: "false"
       - name: deno_allow_net
         title: Deno Allow Net
-        description: Pass `--allow-net` when the Deno command is run. Set to `*` to allow all network access.
+        tooltip: Pass `--allow-net` when the Deno command is run. Set to `*` to allow all network access.
         required: false
         itemType: string
+        collectionType: array
         array: []
       - name: deno_allow_read
         title: Deno Allow Read
-        description: Pass `--allow-read` when the Deno command is run. Set to `*` to allow reading all files.
+        tooltip: Pass `--allow-read` when the Deno command is run. Set to `*` to allow reading all files.
         required: false
         itemType: string
+        collectionType: array
         array: []
       - name: deno_allow_write
         title: Deno Allow Write
-        description: Pass `--allow-write` when the Deno command is run. Set to `*` to allow writing all files.
+        tooltip: Pass `--allow-write` when the Deno command is run. Set to `*` to allow writing all files.
         required: false
         itemType: string
+        collectionType: array
         array: []
       - name: deno_allow_env
         title: Deno Allow Env
-        description: Pass `--allow-env` when the Deno command is run. Set to `*` to allow all environment variables.
+        tooltip: Pass `--allow-env` when the Deno command is run. Set to `*` to allow all environment variables.
         required: false
         itemType: string
+        collectionType: array
         array: []
       - name: deno_allow_run
         title: Deno Allow Run
-        description: Pass `--allow-run` when the Deno command is run. Set to `*` to allow running all subprocesses.
+        tooltip: Pass `--allow-run` when the Deno command is run. Set to `*` to allow running all subprocesses.
         required: false
         itemType: string
+        collectionType: array
         array: []
       - name: deno_allow_import
         title: Deno Allow Import
-        description: Pass `--allow-import` when the Deno command is run. Set to `*` to allow importing all hosts.
+        tooltip: Pass `--allow-import` when the Deno command is run. Set to `*` to allow importing all hosts.
         required: false
         itemType: string
+        collectionType: array
         array: []
