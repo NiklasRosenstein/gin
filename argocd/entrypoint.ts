@@ -113,6 +113,13 @@ export function parseParameters(parameters?: RawParameters): Parameters {
       parameters!.splice(index, 1);
       return param.array;
     }
+    if (param?.string) {
+      parameters!.splice(index, 1);
+      if (param.string === "") {
+        return [];
+      }
+      return param.string.split(",").map((s) => s.trim()).filter((s) => s !== "");
+    }
     throw new Error(`Expected array for ${name}, but found: ${JSON.stringify(param)}`);
   };
 
