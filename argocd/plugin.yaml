@@ -14,7 +14,7 @@ spec:
       - run
       - --allow-env
       - --allow-run # =deno does not work, needs the full path? path to the symlink its run from doesn't seem to work either
-      - --allow-read # =<exec_path> or =/usr/local/bin/deno does not work, but we only need it for Deno.execPath()
+      - --allow-read # Only needed for Deno.execPath(); can be removed after https://github.com/denoland/deno/pull/29620
       - /gin-argocd/entrypoint.ts
   parameters:
     static:
