@@ -1,7 +1,7 @@
 {
   "name": "@gin/argocd-v1alpha1",
   "version": "0.1.1",
-  "exports": "./src/mod.ts",
+  "exports": { ".": "./src/mod.ts", "./values": "./src/values.ts" },
   "license": "MIT",
   "imports": {
     "@gin/core": "jsr:@gin/core@^0.1.16",
