@@ -1,10 +1,10 @@
-import type { Gin, KubernetesObject, ResourceAdapter } from "@gin/core";
+import { type Gin, type KubernetesObject, type ResourceAdapter, SecretValue } from "@gin/core";
 import { parseAll, stringify } from "@std/yaml";
 import { FileUrl, GitUrl, parseRepoUrl } from "./repourl.ts";
 import { assert } from "@std/assert/assert";
 import { join } from "@std/path/join";
 import { reconcileSparseCheckout, run } from "./git.ts";
-import { hashToHexdigest } from "@gin/core/util";
+import { hashToHexdigest, replaceValues } from "@gin/core/util";
 
 /**
  * This Gin custom resource represents a Helm chart that will be templated using the Helm CLI via the
@@ -48,7 +48,7 @@ export interface HelmChart<T> extends KubernetesObject {
     version?: string;
 
     /**
-     * Values to pass to the Helm chart.
+     * Values to pass to the Helm chart. Values of type {@link SecretValue} are accepted.
      */
     values?: T;
   };
@@ -167,6 +167,14 @@ export class HelmChartAdapter implements ResourceAdapter<UntypedHelmChart> {
     else {
       throw new Error(`Unsupported repository protocol: ${repository}`);
     }
+
+    // Replace SecretValue instances in the values.
+    const values = replaceValues(resource.spec.values || {}, (val) => {
+      if (val instanceof SecretValue) {
+        return val.secretValue;
+      }
+      return val;
+    });
 
     const versionArg = version ? ["--version", String(version), "--devel"] : [];
 
