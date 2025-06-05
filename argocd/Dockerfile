@@ -21,6 +21,10 @@ RUN ln -vs $(mise which argocd) /usr/local/bin/argocd-cmp-server && \
     find /mise/installs -type f -executable -exec ln -vs {} /usr/local/bin/ \;
 COPY entrypoint.ts ./
 
+RUN groupadd --system --gid 999 argocd && \
+    useradd --system --uid 999 --gid 999 --home /home/argocd -m --shell /bin/false argocd
+USER argocd
+
 WORKDIR /home/argocd/cmp-server/config/
 COPY plugin.yaml ./
 WORKDIR /home/argocd
