@@ -14,7 +14,7 @@ spec:
       - run
       - --allow-env
       - --allow-run=deno
-      - --allow-read=<exec_path>
+      - --allow-read=/usr/local/bin/deno
       - /gin-argocd/entrypoint.ts
   parameters:
     static:
