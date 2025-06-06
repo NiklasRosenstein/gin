@@ -4,7 +4,7 @@
 
 import { Gin, SecretValue } from "jsr:@gin/core";
 import type { ArgoCDDeployment } from "jsr:@gin/argocd-v1alpha1";
-import type { Repository } from "jsr:@gin/argocd-v1alpha1/types";
+import type { Repository } from "jsr:@gin/argocd-v1alpha1/crds";
 
 new Gin().run((gin) => {
   gin.emit<ArgoCDDeployment>({

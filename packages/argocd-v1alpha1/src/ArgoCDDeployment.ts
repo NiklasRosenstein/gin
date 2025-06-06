@@ -1,3 +1,10 @@
+/**
+ * @module ArgoCDDeployment
+ *
+ * This module provides the {@link ArgoCDDeployment} Gin custom resource that can be used to deploy ArgoCD to
+ * a Kubernetes cluster. It acts mostly as a wrapper around the ArgoCD Helm chart, with some conveniences.
+ */
+
 import { type Gin, type KubernetesObject, type ObjectMeta, type ResourceAdapter, SecretValue } from "@gin/core";
 import type { ArgoCDChartValues, IngressConfig } from "./values.ts";
 import type { HelmChart } from "@gin/helm-v1alpha1";

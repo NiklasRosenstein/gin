@@ -1,7 +1,12 @@
 /**
- * ArgoCD-specific types.
+ * @module crds
+ *
+ * This module exports interfaces for ArgoCD custom resources, i.e. `Application`, `AppProject` and `ApplicationSet`,
+ * but also for for `Secret`-based resources such as repository credentials and templates (see {@link Repository}
+ * and {@link RepositoryCredentialTemplate}) and cluster secrets (see {@link Cluster}).
  */
 
+export * from "./crds-ai.ts";
 import type { KubernetesObject, ObjectMeta, SecretValue } from "@gin/core";
 
 /**
@@ -114,5 +119,3 @@ export interface ClusterSecret {
   };
   disableCompression?: boolean;
 }
-
-// TODO: Add definitions for Application, ApplicationSet and Project resources
