@@ -40,13 +40,13 @@ new Gin().run((gin) => {
       common: {
         adminPassword: {
           bcryptHash: "$2b$12$1ykn5sGxWBPnDs89/pNukOFdRZ2oC86CvoJj1880mmH0GwbnA5Z2q", // "password"
-        }
+        },
       },
       values: {
         crds: {
           install: true,
           keep: true,
-        }
+        },
       },
     },
   });
