@@ -3,7 +3,7 @@
  */
 
 import { Gin } from "jsr:@gin/core";
-import { WebApp } from "jsr:@gin/webapp-v1alpha1";
+import type { WebApp } from "jsr:@gin/webapp-v1alpha1";
 
 new Gin().run((gin) => {
   gin.emit<WebApp>({

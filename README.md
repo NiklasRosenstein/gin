@@ -21,8 +21,8 @@ Check out [`@gin` on JSR.io][@gin] for more information, examples and documentat
 ## Getting started
 
 The following is a basic example that makes use of the [`@gin/webapp-v1alpha1`][webapp] package to define a simple
-stateless web application with a `Deployment`, `Service`, and `Ingress` resource. For more complex examples, check out
-the [examples/](./examples/) directory and the [`@gin` scope on JSR.io][@gin].
+stateless web application with a `Deployment`, `Service`, and `Ingress` resource. For more examples, check out the
+`examples/` directory in each of the [`packages/`](packages/).
 
 ```ts
 // webapp.ts

@@ -1,6 +1,6 @@
 import { Gin } from "jsr:@gin/core";
 import { Sops } from "jsr:@gin/sops";
-import { WebApp } from "jsr:@gin/webapp-v1alpha1";
+import type { WebApp } from "jsr:@gin/webapp-v1alpha1";
 
 const sops = new Sops({ path: import.meta.dirname + "/secrets.yaml" });
 

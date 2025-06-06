@@ -8,7 +8,7 @@
  */
 
 import { Gin } from "jsr:@gin/core";
-import { HelmChart, HelmOptions } from "jsr:@gin/helm-v1alpha1";
+import type { HelmChart, HelmOptions } from "jsr:@gin/helm-v1alpha1";
 
 interface IngressNginxValues {
   fullnameOverride?: string;
@@ -45,7 +45,8 @@ new Gin()
         namespace: "default",
       },
       spec: {
-        repository: "git+https://github.com/kubernetes/ingress-nginx?path=charts",
+        repository: "https://kubernetes.github.io/ingress-nginx",
+        // repository: "git+https://github.com/kubernetes/ingress-nginx?path=charts",
         chart: "ingress-nginx",
         version: "helm-chart-4.12.2",
         values: {
