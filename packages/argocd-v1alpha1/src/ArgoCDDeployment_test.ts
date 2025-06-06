@@ -117,6 +117,10 @@ Deno.test("ArgoCDDeploymentAdapter", async () => {
                   },
                   {
                     "mountPath": "/home/argocd/cmp-server/plugins",
+                    "name": "plugins",
+                  },
+                  {
+                    "mountPath": "/var/run/argocd",
                     "name": "var-files",
                   },
                 ],

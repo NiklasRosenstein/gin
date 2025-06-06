@@ -211,8 +211,12 @@ export class ArgoCDDeploymentAdapter implements ResourceAdapter<ArgoCDDeployment
               mountPath: "/tmp",
             },
             {
-              name: "var-files",
+              name: "plugins",
               mountPath: "/home/argocd/cmp-server/plugins",
+            },
+            {
+              name: "var-files",
+              mountPath: "/var/run/argocd",
             },
           ],
         });
