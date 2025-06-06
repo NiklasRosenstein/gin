@@ -4,6 +4,7 @@
   "exports": {
     ".": "./src/mod.ts",
     "./values": "./src/values.ts",
+    "./types": "./src/types.ts",
     "./ArgoCDDeployment": "./src/ArgoCDDeployment.ts"
   },
   "license": "MIT",
