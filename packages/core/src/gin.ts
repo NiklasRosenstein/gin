@@ -113,7 +113,11 @@ export class Gin {
       if (typeof pkg.default === "function") {
         const options = this.getOptions(packageName);
         module = await pkg.default(options);
-        if (!(module instanceof Module)) {
+        if (!(Module.isModule(module))) {
+          console.trace(
+            `Package '${packageName}' default export is a function, but it did not return a Module. Got instead:`,
+            module,
+          );
           throw new Error(`Package '${packageName}' default export is a function, but it did not return a Module.`);
         }
       }
