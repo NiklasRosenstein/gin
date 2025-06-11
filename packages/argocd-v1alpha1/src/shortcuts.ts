@@ -176,7 +176,7 @@ export function GinApplication({
   ignoreDifferences,
   autoApply = false,
   autoPrune = false,
-  autoSelfHeal = true,
+  autoSelfHeal = false,
   deno = {},
 }: {
   name: string;
