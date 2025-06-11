@@ -160,9 +160,13 @@ async function main() {
     }
   }
 
+  // Batch the Git pushes in groups of three as otherwise GitHub Actions will not trigger.
   console.log("Pushing tags to remote repository...");
   if (!dry) {
-    await gitPush(tagNames, args.force);
+    for (let i = 0; i < tagNames.length; i += 3) {
+      const batch = tagNames.slice(i, i + 3);
+      await gitPush(batch, args.force);
+    }
   }
 
   console.log("Success!");
