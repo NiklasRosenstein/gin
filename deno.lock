@@ -1,6 +1,8 @@
 {
   "version": "5",
   "specifiers": {
+    "jsr:@gin/core@~0.1.19": "0.1.19",
+    "jsr:@gin/helm-v1alpha1@~0.1.6": "0.1.10",
     "jsr:@std/assert@^1.0.13": "1.0.13",
     "jsr:@std/cli@^1.0.19": "1.0.19",
     "jsr:@std/crypto@^1.0.5": "1.0.5",
@@ -14,6 +16,28 @@
     "npm:stacktracey@^2.1.8": "2.1.8"
   },
   "jsr": {
+    "@gin/core@0.1.19": {
+      "integrity": "8fbb193ffe9f4e36376150f7bdb6a57e929264a0f37f8115b3a5582aae207c25",
+      "dependencies": [
+        "jsr:@std/assert",
+        "jsr:@std/cli",
+        "jsr:@std/crypto",
+        "jsr:@std/encoding",
+        "jsr:@std/regexp",
+        "jsr:@std/yaml",
+        "npm:stacktracey"
+      ]
+    },
+    "@gin/helm-v1alpha1@0.1.10": {
+      "integrity": "41b6934a2c6c85b2b02f86bc73818249dfd339d86fc04131d511d12606930316",
+      "dependencies": [
+        "jsr:@gin/core",
+        "jsr:@std/assert",
+        "jsr:@std/crypto",
+        "jsr:@std/path",
+        "jsr:@std/yaml"
+      ]
+    },
     "@std/assert@1.0.13": {
       "integrity": "ae0d31e41919b12c656c742b22522c32fb26ed0cba32975cb0de2a273cb68b29",
       "dependencies": [
