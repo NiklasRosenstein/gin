@@ -195,7 +195,7 @@
       },
       "packages/helm-v1alpha1": {
         "dependencies": [
-          "jsr:@gin/core@~0.1.18",
+          "jsr:@gin/core@~0.1.19",
           "jsr:@std/crypto@^1.0.5",
           "jsr:@std/path@^1.1.0",
           "jsr:@std/yaml@^1.0.7"
