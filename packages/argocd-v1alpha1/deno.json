@@ -1,6 +1,6 @@
 {
   "name": "@gin/argocd-v1alpha1",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "exports": {
     ".": "./src/mod.ts",
     "./values": "./src/values.ts",
