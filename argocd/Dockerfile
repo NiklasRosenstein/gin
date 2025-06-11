@@ -24,6 +24,7 @@ COPY entrypoint.ts ./
 RUN groupadd --system --gid 999 argocd && \
     useradd --system --uid 999 --gid 999 --home /home/argocd -m --shell /bin/false argocd
 USER argocd
+ENV NO_COLOR=true
 
 WORKDIR /home/argocd/cmp-server/config/
 COPY plugin.yaml ./
