@@ -82,6 +82,26 @@ export class Module {
     this.resourceAdapters.get(apiVersion)!.set(kind, adapter);
     return this;
   }
+
+  /**
+   * An extended check if the given object is a {@link Module} instance.
+   *
+   * Sometimes a Gin package may return an instance that is of another constructor that is known to the Gin instance
+   * that is loading the package, such as when slightly different (though hopefully compatible) versions of the
+   * `@gin/core` package are in play.
+   */
+  static isModule(obj: unknown): obj is Module {
+    if (obj instanceof Module) {
+      return true;
+    }
+    if (
+      Object.getPrototypeOf(obj).constructor.name == "Module" &&
+      (obj as Record<string, unknown>)["getAdapter"] !== undefined
+    ) {
+      return true;
+    }
+    return false;
+  }
 }
 
 /**

@@ -105,7 +105,7 @@ export class Gin {
    * @param packageName - The name of the package to add. The package will be imported.
    * @return The Gin instance itself, allowing for method chaining.
    */
-  withPackage(packageName: string, optional: boolean = false): Gin {
+  withPackage(packageName: string): Gin {
     const promise = import(packageName).then(async (pkg) => {
       let module: Module | undefined = undefined;
 
@@ -117,7 +117,7 @@ export class Gin {
           throw new Error(`Package '${packageName}' default export is a function, but it did not return a Module.`);
         }
       }
-      else if (pkg.default instanceof Module) {
+      else if (Module.isModule(pkg.default)) {
         module = pkg.default;
       }
       else {
@@ -126,15 +126,7 @@ export class Gin {
 
       console.trace(`Adding package: '${packageName}'`);
       this.modules.push(module!);
-    })
-      .catch((error) => {
-        if (optional) {
-          this.warnings.push(`Attempted to load package '${packageName}', but it failed: ${error.message}`);
-        }
-        else {
-          throw error;
-        }
-      });
+    });
     this.pendingPackages.push(promise);
     return this;
   }
@@ -229,7 +221,7 @@ export class Gin {
       }
 
       // Attempt to load the package dynamically
-      this.withPackage(packageName, true); // Load the package as optional
+      this.withPackage(packageName);
       return this.findAdapter(resource, false); // Retry finding the adapter after loading the package
     }
 
