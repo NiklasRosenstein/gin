@@ -30,7 +30,7 @@ export function GitRepository({
   sshPrivateKey,
 }: {
   name: string;
-  project: string;
+  project?: string;
   url: string;
   username?: string;
   password?: SecretValue;
@@ -94,7 +94,7 @@ export function GitRepositoryCredentialTemplate({
   sshPrivateKey,
 }: {
   name: string;
-  project: string;
+  project?: string;
   urlPrefix: string;
   username?: string;
   password?: SecretValue;
@@ -169,13 +169,13 @@ export function GinApplication({
   deno = {},
 }: {
   name: string;
-  namespace: string;
-  project: string;
+  namespace?: string;
+  project?: string;
   script: string;
-  args: string[];
+  args?: string[];
   repository: string;
-  revision: string;
-  targetCluster: string;
+  revision?: string;
+  targetCluster?: string;
   targetNamespace?: string;
   deno?: {
     allowDefault?: boolean;
