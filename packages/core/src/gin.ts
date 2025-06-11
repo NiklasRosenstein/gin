@@ -319,6 +319,22 @@ export class Gin {
         return val;
       }));
 
+      // When we're running in ArgoCD, the full filename that a resource is emitted from will always change due
+      // to the temporary directory that the worktree is checked out to for the config management plugin. To
+      // work around this, we update these filenames in the Gin metadata.
+      const ARGOCD_TMP_DIR = "file:///tmp/_cmp_server/";
+      finalResource.gin = finalResource.gin || {};
+      for (const key of ["loadedFrom", "emittedFrom", "loadedFromRoot", "emittedFromRoot"]) {
+        let value = (finalResource.gin as Record<string, string | undefined>)[key];
+        if (value !== undefined && typeof value === "string" && value.startsWith(ARGOCD_TMP_DIR)) {
+          // Remove the ArgoCD temporary directory prefix from the value, and then the subdirectory as it
+          // is the random part.
+          value = value.slice(ARGOCD_TMP_DIR.length);
+          value = "file://" + value.split("/").slice(1).join("/");
+          (finalResource.gin as Record<string, string | undefined>)[key] = value;
+        }
+      }
+
       finalResource.metadata.annotations = finalResource.metadata.annotations || {};
       finalResource.metadata.annotations[GIN_METADATA_ANNOTATION] = JSON.stringify(finalResource.gin || {});
 
