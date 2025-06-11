@@ -84,6 +84,10 @@ export interface Cluster extends KubernetesObject {
   data?: {
     "name"?: string;
     "server": string;
+
+    /**
+     * This field must be a JSON string that adheres to the {@link ClusterSecret} interface.
+     */
     "config"?: SecretValue;
   };
   stringData: Cluster["data"];
