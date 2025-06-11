@@ -61,6 +61,11 @@ async function gitPush(refs: string[], force: boolean) {
   await run(args, { check: true });
 }
 
+async function gitHasChanges(filePath: string): Promise<boolean> {
+  const status = await run(["git", "diff", "--exit-code", filePath], { check: false, stdout: "null" });
+  return status.code !== 0;
+}
+
 async function getDenoJsonVersion(pkg: string): Promise<string> {
   const denoJsonPath = `packages/${pkg}/deno.json`;
   try {
@@ -140,6 +145,22 @@ async function main() {
     const [denoJson, modified] = await updateDenoJson(pkg, pkgVersion, dry);
     if (!dry && modified) {
       await gitAdd([denoJson]);
+    }
+  }
+
+  // Run a "deno check" to ensure all packages have been updated.
+  for (const pkg of args.pkgs) {
+    console.log(`Running 'deno check' for '${pkg}' ...`);
+    if (!dry) {
+      await run(["deno", "check", `packages/${pkg}`], { check: true });
+    }
+  }
+
+  // If `deno.lock` has a diff, we need to update it as well.
+  if (await gitHasChanges("deno.lock")) {
+    console.log("Staging updated 'deno.lock' ...");
+    if (!dry) {
+      await gitAdd(["deno.lock"]);
     }
   }
 
