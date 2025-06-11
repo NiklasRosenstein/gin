@@ -161,6 +161,7 @@ async function main() {
   }
 
   // Batch the Git pushes in groups of three as otherwise GitHub Actions will not trigger.
+  // TODO: Preferably we push them in topological order, as the JSR dependencies need to be met before publishing.
   console.log("Pushing tags to remote repository...");
   if (!dry) {
     for (let i = 0; i < tagNames.length; i += 3) {
