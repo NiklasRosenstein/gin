@@ -6,8 +6,9 @@ export interface HelmOptions extends ModuleOptions {
   /**
    * The directory where Helm charts and Git repositories will be cached. It is strongly recommended to specify a
    * persistent directory to avoid re-downloading Helm charts and Git repositories every time they are needed.
-   * If not specified, a temporary directory will be used and a warning is logged. Note that cancelling the execution
-   * of Deno while the temporary directory is being used may leave the directory behind.
+   *
+   * If the `GIN_CACHE_DIR` environment variable is set, it will be used plus `/helm` appended to it. Note that the
+   * variable must be readable by the Deno runtime, otherwise a warning will be logged (see {@link getGinCacheDir}).
    */
   cacheDir?: string;
 }
