@@ -147,12 +147,13 @@ function promoteEnvVar(readName: string, writeName: string): Record<string, stri
 }
 
 async function main() {
+  const params = parseParameters();
+
   // Promote known environment variables.
   const env = {
     ...promoteEnvVar("ARGOCD_ENV_GIN_CACHE_DIR", "GIN_CACHE_DIR"),
   };
 
-  const params = parseParameters();
   const args = [
     ...(params.deno_allow_all ? ["--allow-all"] : []),
     ...formatAllowArg("net", params.deno_allow_net),
