@@ -11,7 +11,7 @@
   "license": "MIT",
   "imports": {
     "@gin/core": "jsr:@gin/core@^0.2.0",
-    "@gin/helm-v1alpha1": "jsr:@gin/helm-v1alpha1@^0.1.6",
+    "@gin/helm-v1alpha1": "jsr:@gin/helm-v1alpha1@^0.2.0",
     "@std/assert": "jsr:@std/assert@^1.0.13"
   }
 }
