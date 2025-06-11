@@ -10,6 +10,11 @@ import { deepClone, dropUndefined, getCallerFileAndLine, replaceValues } from ".
 import { parseArgs } from "@std/cli";
 import { SecretValue } from "./mod.ts";
 
+/**
+ * This annotation field is used to store the {@link KubernetesObject#gin} metadata for a resource.
+ */
+export const GIN_METADATA_ANNOTATION = "gin.jsr.io/metadata";
+
 interface PackageMapping {
   /**
    * A regular expression that captures two groups for the name and version of a Gin-style package.
@@ -317,6 +322,9 @@ export class Gin {
         }
         return val;
       }));
+
+      finalResource.metadata.annotations = finalResource.metadata.annotations || {};
+      finalResource.metadata.annotations[GIN_METADATA_ANNOTATION] = JSON.stringify(finalResource.gin || {});
 
       // Only send the resource to the sink after it has been processed. The `processOnce` method modifies the
       // resource in place (e.g. by ensuring the `gin` field is updated appropriately).
