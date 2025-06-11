@@ -7,6 +7,7 @@
 
 import type { Application, Repository, RepositoryCredentialTemplate } from "@gin/argocd-v1alpha1";
 import type { SecretValue } from "@gin/core";
+import type { ResourceIgnoreDifferences } from "./crds-ai.ts";
 
 /**
  * Generate an ArgoCD repository secret connected to a Git repository via HTTP(s) or SSH.
@@ -151,6 +152,11 @@ export function GitRepositoryCredentialTemplate({
  * @param {targetNamespace} - The namespace in the target cluster where the application will be deployed.
  * @param {revision} - The Git revision (branch, tag, or commit) to use for the application. If not specified,
  *   it defaults to "HEAD".
+ * @param {syncOptions} - An array of sync options to apply to the application. Defaults to `["ServerSideApply=true"]`.
+ * @param {ignoreDifferences} - An array of resource ignore differences to apply to the application. This can be used
+ *   to ignore specific differences in resources that should not trigger a sync. For example, you can ignore
+ *   differences in the `status` field of resources. If not specified, it defaults to
+ *   {@link STANDARD_IGNORE_DIFFERENCES}.
  * @param {deno} - Security options for the Deno runtime when executing the script. If `allowDefault` is not set, or
  *   set to `true`, the script will be allowed to run `helm` and `sops`, as well as given read and write access to
  *   the `/tmp/gin` directory that is used as a cache directory and the permission to read the `GIN_CACHE_DIR`
@@ -166,6 +172,11 @@ export function GinApplication({
   revision = "HEAD",
   targetCluster = "in-cluster",
   targetNamespace,
+  syncOptions = ["ServerSideApply=true"],
+  ignoreDifferences,
+  autoApply = false,
+  autoPrune = false,
+  autoSelfHeal = true,
   deno = {},
 }: {
   name: string;
@@ -177,6 +188,11 @@ export function GinApplication({
   revision?: string;
   targetCluster?: string;
   targetNamespace?: string;
+  syncOptions?: string[];
+  ignoreDifferences?: ResourceIgnoreDifferences[];
+  autoApply?: boolean;
+  autoPrune?: boolean;
+  autoSelfHeal?: boolean;
   deno?: {
     allowDefault?: boolean;
     allowAll?: boolean;
@@ -242,6 +258,36 @@ export function GinApplication({
           ],
         },
       },
+      syncPolicy: {
+        automated: {
+          enabled: autoApply,
+          prune: autoPrune,
+          selfHeal: autoSelfHeal,
+        },
+        syncOptions: syncOptions,
+      },
+      ignoreDifferences: ignoreDifferences ?? STANDARD_IGNORE_DIFFERENCES,
     },
   };
 }
+
+/**
+ * An array of standard resource ignore differences that are commonly used in ArgoCD applications.
+ */
+export const STANDARD_IGNORE_DIFFERENCES: ResourceIgnoreDifferences[] = [
+  {
+    group: "apps",
+    kind: "StatefulSet",
+    jqPathExpressions: [
+      ".spec.volumeClaimTemplates[]?.apiVersion",
+      ".spec.volumeClaimTemplates[]?.kind",
+    ],
+  },
+  {
+    group: "",
+    kind: "PersistentVolumeClaim",
+    jqPathExpressions: [
+      ".spec.volumeName", // Might be set automatically and is immutable after the fact
+    ],
+  },
+];
