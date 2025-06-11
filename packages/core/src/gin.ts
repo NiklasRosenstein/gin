@@ -52,6 +52,9 @@ export class Gin {
   // Pending emits, collect at the end of `run()`.
   private pendingEmits: Promise<void>[] = [];
 
+  // Listeners for the "emit" event.
+  private resourceProcessors: ((gin: Gin, resource: KubernetesObject) => Promise<KubernetesObject[]> | KubernetesObject[])[] = [];
+
   // Resources that we've emitted so far. Used to catch when the same unique resource identifier is emitted multiple
   // times.
   private emittedResources: Map<string, ResourceLocator> = new Map();
@@ -168,6 +171,23 @@ export class Gin {
   }
 
   /**
+   * Registers a resource processor. Processors are a more low-level API that {@link ResourceAdapter}s as they are
+   * invoked unfiltered for every resource (before adapters). Similar to adapters, they can return the same resource
+   * as a single-item array but are allowed to modify it, or replace a resource with zero or more other resources.
+   *
+   * When a processor makes a change to a resource, it must leave a record in the {@link KubernetesObject#gin}'s
+   * {@link GinMeta#history} field. The {@link GinMeta#parent} and {@link GinMeta#children} are managed automatically
+   * by Gin if other resources are returned.
+   *
+   * @param processor
+   * @return
+   */
+  withResourceProcessor(processor: (gin: Gin, resource: KubernetesObject) => Promise<KubernetesObject[]> | KubernetesObject[]): Gin {
+    this.resourceProcessors.push(processor);
+    return this;
+  }
+
+  /**
    * Resolves an API version to a package name, given the registered package mappings.
    */
   resolvePackageNameFromApiVersion(apiVersion: string): string | undefined {
@@ -243,6 +263,8 @@ export class Gin {
   async processOnce<T extends KubernetesObject>(resource: T): Promise<KubernetesObject[]> {
     resource.gin = resource.gin || {};
 
+    const processors = Array.from(this.resourceProcessors);
+
     // Find a matching adapter for the resource.
     const adapter = await this.findAdapter(resource);
     if (!adapter) {
@@ -259,11 +281,17 @@ export class Gin {
         resource.gin.notes.push({ kind: "Warning", message });
       }
 
-      return [resource]; // No adapter found, return the resource as is
+      // return [resource]; // No adapter found, return the resource as is
+    }
+    else {
+      processors.push(async (gin, resource) => {
+        await adapter.validate(gin, resource as T);
+        return await adapter.generate(gin, resource as T);
+      })
     }
 
     resource.gin.children = [];
-    await adapter.validate(this, resource);
+    await adapter.validate(this, resource)
     return (await adapter.generate(this, resource)).map((res) => {
       // If the adapter returns its own resource object, we don't update the parent field.
       if (res === resource) {
