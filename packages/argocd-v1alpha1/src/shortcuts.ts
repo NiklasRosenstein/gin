@@ -259,11 +259,14 @@ export function GinApplication({
         },
       },
       syncPolicy: {
-        automated: {
-          enabled: autoApply,
-          prune: autoPrune,
-          selfHeal: autoSelfHeal,
-        },
+        // NOTE: Despite there being an "enabled" field in the spec, it doesn't seem to take effect (tested on
+        //       ArgoCD v3.0.5). Not setting the `automated` field at all will disable auto-sync for sure.
+        automated: autoApply
+          ? {
+            prune: autoPrune,
+            selfHeal: autoSelfHeal,
+          }
+          : undefined,
         syncOptions: syncOptions,
       },
       ignoreDifferences: ignoreDifferences ?? STANDARD_IGNORE_DIFFERENCES,
