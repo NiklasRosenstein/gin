@@ -2,6 +2,7 @@ export { Gin } from "./gin.ts";
 export { Module, type ModuleOptions, type ResourceAdapter } from "./module.ts";
 export type { KubernetesObject, ObjectMeta, OwnerReference } from "./types.ts";
 export { type SecretProvider, SecretValue } from "./secret.ts";
+export { getGinCacheDir } from "./utils.ts";
 
 /**
  * This is an identity function. It's single purpose is to make sure the compiler will check for extra fields

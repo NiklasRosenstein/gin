@@ -188,3 +188,17 @@ export async function hashToHexdigest(
   );
   return encodeHex(hashBuffer);
 }
+
+/**
+ * Returns the cache path for Gin pipelines. If `GIN_CACHE_DIR` is set, and the Deno runtime has read access to it,
+ * it will return that path. Otherwise, it will return the default cache directory (`.gin/cache`). It will also
+ * log a warning if the `GIN_CACHE_DIR` variable cannot be read.
+ */
+export async function getGinCacheDir(): Promise<string> {
+  const hasPermission = await Deno.permissions.query({ name: "env", variable: "GIN_CACHE_DIR" }).then((p) => p.state);
+  if (hasPermission !== "granted") {
+    console.warn("GIN_CACHE_DIR environment variable is not accessible. Defaulting to `.gin/cache`.");
+    return ".gin/cache";
+  }
+  return Deno.env.get("GIN_CACHE_DIR") ?? ".gin/cache";
+}
