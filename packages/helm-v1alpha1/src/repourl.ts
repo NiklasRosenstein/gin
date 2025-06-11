@@ -1,5 +1,5 @@
 import type { DigestAlgorithm } from "@std/crypto/crypto";
-import { hashToHexdigest } from "@gin/core/util";
+import { hashToHexdigest } from "@gin/core/utils";
 
 /**
  * Represents a URL to a file on the local filesystem.

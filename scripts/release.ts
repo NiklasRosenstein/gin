@@ -16,6 +16,9 @@ function usageAndExit(): never {
 }
 
 const versionBumps = {
+  "current": (semver: semver.SemVer): semver.SemVer => {
+    return semver;
+  },
   "major": (semver: semver.SemVer): semver.SemVer => {
     semver.major++;
     semver.minor = 0;
@@ -122,11 +125,15 @@ async function main() {
   const version = args.pkgs.pop()!;
   const releasedVersions: Map<string, string> = new Map();
 
-  for (const pkg of args.pkgs) {
+  for (let pkg of args.pkgs) {
     let pkgVersion = version;
-    if (version in versionBumps) {
+    if (pkg.includes("@")) {
+      pkgVersion = pkg.split("@")[1]!;
+      pkg = pkg.split("@")[0]!;
+    }
+    if (pkgVersion in versionBumps) {
       const latestVersion = await getDenoJsonVersion(pkg);
-      pkgVersion = semver.format(versionBumps[version as keyof typeof versionBumps](semver.parse(latestVersion)));
+      pkgVersion = semver.format(versionBumps[pkgVersion as keyof typeof versionBumps](semver.parse(latestVersion)));
     }
 
     releasedVersions.set(pkg, pkgVersion);
@@ -136,9 +143,8 @@ async function main() {
     }
   }
 
-  const releasesFormatted = Array.from(releasedVersions.entries()).map(([pkg, version]) => `${pkg}@v${version}`).join(
-    ", ",
-  );
+  const tagNames = Array.from(releasedVersions.entries()).map(([pkg, version]) => `${pkg}@v${version}`);
+  const releasesFormatted = tagNames.join(", ");
   console.log("Releasing", releasesFormatted, "...");
 
   console.log("Committing changes to Git...");
@@ -146,7 +152,6 @@ async function main() {
     await gitCommit(`Release ${releasesFormatted}`, { allowEmpty: true });
   }
 
-  const tagNames = args.pkgs.map((pkg) => `${pkg}@v${releasedVersions.get(pkg)}`);
   console.log("Tagging ", ...tagNames);
 
   if (!dry) {

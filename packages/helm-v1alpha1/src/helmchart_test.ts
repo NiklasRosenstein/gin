@@ -2,7 +2,7 @@ import { Gin } from "@gin/core";
 import { HelmChartAdapter, type UntypedHelmChart } from "./helmchart.ts";
 import { assertEquals, assertRejects } from "@std/assert";
 import { dirname, join } from "@std/path";
-import { createManagedTempDir } from "@gin/core/util";
+import { createManagedTempDir } from "@gin/core/utils";
 
 const TESTDATA_DIR = join(dirname(dirname(import.meta.filename!)), "testdata");
 

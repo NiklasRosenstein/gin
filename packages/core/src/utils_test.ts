@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert/equals";
-import { dropUndefined } from "./util.ts";
+import { dropUndefined } from "./utils.ts";
 
 Deno.test(function testDropUndefinedOnArray() {
   assertEquals(

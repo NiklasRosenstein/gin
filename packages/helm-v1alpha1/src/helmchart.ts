@@ -4,7 +4,7 @@ import { FileUrl, GitUrl, parseRepoUrl } from "./repourl.ts";
 import { assert } from "@std/assert/assert";
 import { join } from "@std/path/join";
 import { reconcileSparseCheckout, run } from "./git.ts";
-import { hashToHexdigest, replaceValues } from "@gin/core/util";
+import { hashToHexdigest, replaceValues } from "@gin/core/utils";
 
 /**
  * This Gin custom resource represents a Helm chart that will be templated using the Helm CLI via the

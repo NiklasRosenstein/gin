@@ -1,10 +1,7 @@
 {
   "version": "5",
   "specifiers": {
-    "jsr:@eemeli/yaml@^2.8.0": "2.8.0",
-    "jsr:@gin/core@0.1": "0.1.2",
     "jsr:@gin/core@~0.1.11": "0.1.11",
-    "jsr:@gin/core@~0.1.16": "0.1.16",
     "jsr:@gin/helm-v1alpha1@~0.1.6": "0.1.6",
     "jsr:@std/assert@^1.0.13": "1.0.13",
     "jsr:@std/cli@^1.0.19": "1.0.19",
@@ -23,33 +20,11 @@
     "npm:stacktracey@^2.1.8": "2.1.8"
   },
   "jsr": {
-    "@eemeli/yaml@2.8.0": {
-      "integrity": "ebc4e9fd36298bebdfa0d04176b17a6a7bfde3f9a1046e53f4bd2d9440cc586c"
-    },
-    "@gin/core@0.1.2": {
-      "integrity": "d7f33b38c6687729410ae0d005099a383b3171718866b5e5b259a430ba6f2805",
-      "dependencies": [
-        "jsr:@eemeli/yaml",
-        "jsr:@std/assert",
-        "jsr:@std/regexp"
-      ]
-    },
     "@gin/core@0.1.11": {
       "integrity": "76e054b0622fc7587577ebf6d62c03493c4ca371d05f2789a2dd99a97204f302",
       "dependencies": [
         "jsr:@std/assert",
         "jsr:@std/cli",
-        "jsr:@std/regexp",
-        "jsr:@std/yaml@^1.0.7",
-        "npm:stacktracey"
-      ]
-    },
-    "@gin/core@0.1.16": {
-      "integrity": "a0b8bf5fb62a3fe5644e9fc6fa6bbf3f1fd6c8e4bd2568051cd665cbd2c95eff",
-      "dependencies": [
-        "jsr:@std/assert",
-        "jsr:@std/cli",
-        "jsr:@std/encoding",
         "jsr:@std/regexp",
         "jsr:@std/yaml@^1.0.7",
         "npm:stacktracey"
@@ -203,7 +178,7 @@
     "members": {
       "packages/argocd-v1alpha1": {
         "dependencies": [
-          "jsr:@gin/core@~0.1.16",
+          "jsr:@gin/core@~0.1.18",
           "jsr:@gin/helm-v1alpha1@~0.1.6",
           "jsr:@std/assert@^1.0.13"
         ]
@@ -220,7 +195,7 @@
       },
       "packages/helm-v1alpha1": {
         "dependencies": [
-          "jsr:@gin/core@~0.1.16",
+          "jsr:@gin/core@~0.1.18",
           "jsr:@std/crypto@^1.0.5",
           "jsr:@std/path@^1.1.0",
           "jsr:@std/yaml@^1.0.7"
@@ -234,7 +209,7 @@
       },
       "packages/webapp-v1alpha1": {
         "dependencies": [
-          "jsr:@gin/core@0.1"
+          "jsr:@gin/core@0.1.18"
         ]
       }
     }

@@ -6,7 +6,7 @@ import { Module, type ModuleOptions, type ResourceAdapter } from "./module.ts";
 import { escape } from "@std/regexp/escape";
 import { type Sink, StdoutSink as YamlStdoutSink } from "./sink.ts";
 import { type KubernetesObject, ResourceLocator } from "./types.ts";
-import { deepClone, dropUndefined, getCallerFileAndLine, replaceValues } from "./util.ts";
+import { deepClone, dropUndefined, getCallerFileAndLine, replaceValues } from "./utils.ts";
 import { parseArgs } from "@std/cli";
 import { SecretValue } from "./mod.ts";
 

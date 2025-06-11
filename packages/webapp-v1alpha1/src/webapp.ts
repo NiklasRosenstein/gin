@@ -1,5 +1,5 @@
 import type { Gin, KubernetesObject, ResourceAdapter, SecretValue } from "@gin/core";
-import { dropUndefined } from "@gin/core/util";
+import { dropUndefined } from "@gin/core/utils";
 
 export interface WebApp extends KubernetesObject {
   apiVersion: "webapp.gin.jsr.io/v1alpha1";

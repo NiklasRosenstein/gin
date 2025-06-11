@@ -8,7 +8,7 @@
 import { type Gin, type KubernetesObject, type ObjectMeta, type ResourceAdapter, SecretValue } from "@gin/core";
 import type { ArgoCDChartValues, IngressConfig } from "./values.ts";
 import type { HelmChart } from "@gin/helm-v1alpha1";
-import { deepClone } from "@gin/core/util";
+import { deepClone } from "@gin/core/utils";
 
 // Imports for {@links}
 // deno-lint-ignore no-unused-vars
