@@ -56,10 +56,6 @@ export function parseParameters(parameters?: RawParameters): Parameters {
     parameters = JSON.parse(
       expect(Deno.env.get("ARGOCD_APP_PARAMETERS"), "ARGOCD_APP_PARAMETERS not set"),
     ) as RawParameters;
-    console.warn(
-      "ArgoCD Deno Entrypoint: Using parameters from ARGOCD_APP_PARAMETERS environment variable:",
-      parameters,
-    );
   }
 
   if (parameters === null) {
@@ -141,17 +137,22 @@ export function parseParameters(parameters?: RawParameters): Parameters {
   return parsed;
 }
 
-async function main() {
-  console.warn("ArgoCD Deno Entrypoint: Starting...");
-  for (const [key, value] of Object.entries(Deno.env.toObject())) {
-    if (key.startsWith("ARGOCD_") || key.startsWith("PARAM_")) {
-      console.warn(`${key}=${value}`);
-    }
+function promoteEnvVar(readName: string, writeName: string): Record<string, string> {
+  const value = Deno.env.get(readName);
+  if (value !== undefined) {
+    console.warn(`Promoting environment variable ${readName} to ${writeName}`);
+    return { [writeName]: value };
   }
+  return {};
+}
 
-  console.warn("ArgoCD Deno Entrypoint: Parsing parameters...");
+async function main() {
+  // Promote known environment variables.
+  const env = {
+    ...promoteEnvVar("ARGOCD_ENV_GIN_CACHE_DIR", "GIN_CACHE_DIR"),
+  };
+
   const params = parseParameters();
-  console.warn("ArgoCD Deno Entrypoint: Parsed parameters:", params);
   const args = [
     ...(params.deno_allow_all ? ["--allow-all"] : []),
     ...formatAllowArg("net", params.deno_allow_net),
@@ -164,7 +165,7 @@ async function main() {
     ...params.args,
   ];
 
-  const result = await new Deno.Command(Deno.execPath(), { args }).spawn().output();
+  const result = await new Deno.Command(Deno.execPath(), { args, env }).spawn().output();
   Deno.exit(result.code);
 }
 
