@@ -1,6 +1,7 @@
 {
   "version": "5",
   "specifiers": {
+    "jsr:@gin/core@0.1.18": "0.1.18",
     "jsr:@gin/core@~0.1.11": "0.1.11",
     "jsr:@gin/helm-v1alpha1@~0.1.6": "0.1.6",
     "jsr:@std/assert@^1.0.13": "1.0.13",
@@ -25,6 +26,18 @@
       "dependencies": [
         "jsr:@std/assert",
         "jsr:@std/cli",
+        "jsr:@std/regexp",
+        "jsr:@std/yaml@^1.0.7",
+        "npm:stacktracey"
+      ]
+    },
+    "@gin/core@0.1.18": {
+      "integrity": "7104ca4277bf2849a0edd86686c786d6eb3f3e13c3f70dc200501a12db91329a",
+      "dependencies": [
+        "jsr:@std/assert",
+        "jsr:@std/cli",
+        "jsr:@std/crypto",
+        "jsr:@std/encoding",
         "jsr:@std/regexp",
         "jsr:@std/yaml@^1.0.7",
         "npm:stacktracey"
