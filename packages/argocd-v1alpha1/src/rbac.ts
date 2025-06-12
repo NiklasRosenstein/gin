@@ -1,5 +1,8 @@
+// NOTE: In order to embed */ in a doc comment, we need to put a zero-width space in between.
+// deno-lint-ignore-file no-irregular-whitespace
+
 /**
- * Represents an RBAC role that defines its rules and the subjects it applies to.g
+ * Represents an RBAC role that defines its rules and the subjects it applies to.
  */
 export interface RBACRole {
   /**
@@ -27,7 +30,7 @@ export interface RBACRole {
    *   {
    *     action: "delete",
    *     resource: "applications",
-   *     subresource: "/*\/Pod\/*\/*",
+   *     subresource: "/*​/Pod​/*​/*",
    *     object: "my-project/*",
    *     effect: "allow",
    *   },
@@ -82,7 +85,7 @@ export interface RBACRule {
    * For application-related resources, this is either of the format `<app-project>/<app-name>`
    * (e.g. `default/my-app`) for standard installations of ArgoCD, or `<app-project>/<app-ns>/<app-name>` for
    * ArgoCD installations with Applications in any Namespace mode enabled. If you want to match all applications,
-   * use `*\/*\/*\/`, otherwise {@link validateRBACRule} will throw an error.
+   * use `*​/*​/*​/`, otherwise {@link validateRBACRule} will throw an error.
    */
   object: string;
 
