@@ -374,6 +374,15 @@ export class Gin {
   }
 
   /**
+   * Emits multiple Kubernetes resources at once.
+   */
+  async emitMany<T extends KubernetesObject>(resources: T[] | AsyncIterable<T> | Iterable<T>): Promise<void> {
+    for await (const resource of resources) {
+      await this.emit(resource);
+    }
+  }
+
+  /**
    * Runs the Gin pipeline, executing the provided callback function with the Gin instance. This method is the main
    * entrypoint for running a Gin pipeline and is preferred over performing the same operations manually as it
    * ensures warnings are printed after the pipeline execution and the sink is closed properly.
