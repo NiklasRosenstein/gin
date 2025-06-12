@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert/equals";
-import { dropUndefined, getCallerFileAndLine } from "./utils.ts";
+import { dropUndefined } from "./utils.ts";
 import type { KubernetesObject, Sink } from "@gin/core";
 import { Gin } from "./gin.ts";
 import { assert } from "@std/assert/assert";

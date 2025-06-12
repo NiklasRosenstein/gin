@@ -207,7 +207,7 @@ export class Gin {
   /**
    * Returns a promise that resolves when all packages have been loaded.
    */
-  get ready() {
+  get ready(): Promise<void> {
     return (async () => {
       if (this.pendingPackages) {
         await Promise.all(this.pendingPackages);
@@ -219,7 +219,7 @@ export class Gin {
   /**
    * Returns a promise that resolves when all resources have been emitted.
    */
-  get done() {
+  get done(): Promise<void> {
     return (async () => {
       // Ensure all pending emits are completed.
       await Promise.all(this.pendingEmits);
