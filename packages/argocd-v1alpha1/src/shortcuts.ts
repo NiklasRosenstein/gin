@@ -170,6 +170,7 @@ export function GinApplication({
   args = [],
   repository,
   revision = "HEAD",
+  path = ".",
   targetCluster = "in-cluster",
   targetNamespace,
   syncOptions = ["ServerSideApply=true"],
@@ -186,6 +187,7 @@ export function GinApplication({
   args?: string[];
   repository: string;
   revision?: string;
+  path?: string;
   targetCluster?: string;
   targetNamespace?: string;
   syncOptions?: string[];
@@ -239,7 +241,7 @@ export function GinApplication({
       source: {
         repoURL: repository,
         targetRevision: revision,
-        path: ".", // TODO: Can we use this parameter to indicate the script path instead?
+        path: path,
         plugin: {
           name: "gin-v1",
           env: [
