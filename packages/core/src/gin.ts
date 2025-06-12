@@ -4,7 +4,7 @@
 
 import { Module, type ModuleOptions, type ResourceAdapter } from "./module.ts";
 import { escape } from "@std/regexp/escape";
-import { type Sink, StdoutSink as YamlStdoutSink } from "./sink.ts";
+import { type Sink, StdoutSink } from "./sink.ts";
 import { type KubernetesObject, ResourceLocator } from "./types.ts";
 import { deepClone, dropUndefined, getCallerFileAndLine, replaceValues } from "./utils.ts";
 import { parseArgs } from "@std/cli";
@@ -62,7 +62,7 @@ export class Gin {
   private emittedResources: Map<string, ResourceLocator> = new Map();
 
   // Sink for emitted resources.
-  private sink: Sink = new YamlStdoutSink();
+  private sink: Sink = new StdoutSink();
 
   // Warnings collected while processing resources.
   private warnings: string[] = [];
@@ -165,6 +165,15 @@ export class Gin {
   ): Gin {
     console.trace(`Adding resource adapter for API version '${apiVersion.apiVersion}' and kind '${apiVersion.kind}'`);
     this.module.withAdapter<T>(apiVersion, adapter);
+    return this;
+  }
+
+  /**
+   * Override the sink where the final resources are emitted to.
+   */
+  withSink(sink: Sink): Gin {
+    console.trace(`Using sink`, sink);
+    this.sink = sink;
     return this;
   }
 
@@ -394,8 +403,7 @@ export class Gin {
     callback: (gin: Gin) => void | Promise<void>,
   ): Promise<void> {
     const args = parseRunArgs();
-    this.sink = new YamlStdoutSink(args);
-
+    this.sink = new StdoutSink(args);
     this.warnings = [];
     this.pendingEmits = [];
 
