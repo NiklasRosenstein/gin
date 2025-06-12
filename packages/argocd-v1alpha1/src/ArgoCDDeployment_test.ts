@@ -3,6 +3,7 @@ import type { ArgoCDChartValues } from "./values.ts";
 import { _, Gin, SecretValue } from "@gin/core";
 import { assertEquals } from "@std/assert";
 import type { HelmChart } from "@gin/helm-v1alpha1";
+import { dedent } from "npm:ts-dedent@2.0.0";
 
 Deno.test("ArgoCDDeploymentAdapter", async () => {
   const adapter = new ArgoCDDeploymentAdapter();
@@ -34,6 +35,29 @@ Deno.test("ArgoCDDeploymentAdapter", async () => {
         enabled: true,
         ingressClassName: "nginx",
         hostname: "argocd.local",
+      },
+      rbac: {
+        defaultRole: "readonly",
+        roles: {
+          "qa": {
+            subjects: ["my-org:team-qa", "user@example.com"],
+            rules: [
+              {
+                action: "sync",
+                resource: "applications",
+                object: "my-project/*",
+                effect: "allow",
+              },
+              {
+                action: "delete",
+                resource: "applications",
+                subresource: "/*/Pod/*/*",
+                object: "my-project/*",
+                effect: "allow",
+              },
+            ],
+          },
+        },
       },
       values: {
         server: {
@@ -75,6 +99,15 @@ Deno.test("ArgoCDDeploymentAdapter", async () => {
             "secret": {
               "argocdServerAdminPassword": SecretValue.of("$2a$10$EIX9z5Z1b7f8Q0j3e4Y5Uu"),
               "argocdServerAdminPasswordMtime": "1970-01-01T00:34:07.000Z",
+            },
+            "rbac": {
+              "policy.default": "role:readonly",
+              "policy.csv": dedent`
+                p, role:qa, applications, sync, my-project/*, allow
+                p, role:qa, applications, delete/*/Pod/*/*, my-project/*, allow
+                g, my-org:team-qa, role:qa
+                g, user@example.com, role:qa
+              `,
             },
           },
           "repoServer": {

@@ -3,10 +3,11 @@
   "version": "0.3.4",
   "exports": {
     ".": "./src/mod.ts",
-    "./values": "./src/values.ts",
-    "./crds": "./src/crds.ts",
     "./ArgoCDDeployment": "./src/ArgoCDDeployment.ts",
-    "./shortcuts": "./src/shortcuts.ts"
+    "./crds": "./src/crds.ts",
+    "./rbac": "./src/rbac.ts",
+    "./shortcuts": "./src/shortcuts.ts",
+    "./values": "./src/values.ts"
   },
   "license": "MIT",
   "imports": {

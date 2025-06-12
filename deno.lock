@@ -11,7 +11,8 @@
     "jsr:@std/semver@1": "1.0.5",
     "jsr:@std/yaml@^1.0.7": "1.0.7",
     "npm:jsonpath-plus@^10.3.0": "10.3.0_jsep@1.4.0",
-    "npm:stacktracey@^2.1.8": "2.1.8"
+    "npm:stacktracey@^2.1.8": "2.1.8",
+    "npm:ts-dedent@2.0.0": "2.0.0"
   },
   "jsr": {
     "@std/assert@1.0.13": {
@@ -98,6 +99,9 @@
         "as-table",
         "get-source"
       ]
+    },
+    "ts-dedent@2.0.0": {
+      "integrity": "sha512-DfxKjSFQfw9+uf7N9Cy8Ebx9fv5fquK4hZ6SD3Rzr+1jKP6AVA6H8+B5457ZpUs0JKsGpGqIevbpZ9DMQJDp1A=="
     }
   },
   "workspace": {

@@ -7,6 +7,7 @@
 
 import { type Gin, type KubernetesObject, type ObjectMeta, type ResourceAdapter, SecretValue } from "@gin/core";
 import type { ArgoCDChartValues, IngressConfig } from "./values.ts";
+import { generateRBACPolicyEntry, type RBACRule, validateRBACRule } from "./rbac.ts";
 import type { HelmChart } from "@gin/helm-v1alpha1";
 import { deepClone } from "@gin/core/utils";
 
@@ -81,6 +82,70 @@ export interface ArgoCDDeploymentSpec {
   configManagementPlugins?: ConfigManagementPluginSpec[];
 
   /**
+   * RBAC configuration for the ArgoCD server. This is a simplified version of what you can configure in the
+   * {@link ArgoCDChartValues} which, unlike the native ArgoCD RBAC configuration, does not allow you to assign
+   * permissions directly to users or groups. Instead,you must configure a role and instead bind the role to a user
+   * or group.
+   *
+   * See https://argo-cd.readthedocs.io/en/stable/operator-manual/rbac/ for more details.
+   */
+  rbac?: {
+    /**
+     * The name of the default role which Argo CD will falls back to, when authorizing API requests (optional).
+     * If omitted or empty, users may be still be able to login, but will see no apps, projects, etc...
+     */
+    defaultRole?: string;
+
+    /**
+     * Configure roles, what subjects the roles apply to and the rules for the role.
+     */
+    roles?: Record<string, {
+      /**
+       * A list of usernames and/or group names that the role is applied to.
+       *
+       * @example
+       * ```ts
+       * ["admin", "my-org:team-qa", "user@example.org"]
+       * ```
+       */
+      subjects: string[];
+
+      /**
+       * The list of rules that define the permissions for the role.
+       *
+       * @example
+       * ```ts
+       * [
+       *   {
+       *     action: "sync",
+       *     resource: "applications",
+       *     object: "my-project/*",
+       *     effect: "allow",
+       *   },
+       *   {
+       *     action: "delete",
+       *     resource: "applications",
+       *     subresource: "/*\/Pod\/*\/*",
+       *     object: "my-project/*",
+       *     effect: "allow",
+       *   },
+       * ]
+       * ```
+       *
+       * This allows the users with the assigned role to sync applications in the `my-project` project, as well as
+       * delete Pods in the applications.
+       */
+      rules: RBACRule[];
+    }>;
+
+    /**
+     * OIDC scopes to examine during rbac enforcement (in addition to `sub` scope).
+     * The scope value can be a string, or a list of strings.
+     */
+    scopes?: string[];
+  };
+
+  /**
    * The values for the Helm chart. Configuration options defined with {@link ArgoCDDeploymentSpec#common} are
    * merged over the values in this field.
    */
@@ -120,8 +185,24 @@ export interface ConfigManagementPluginSpec {
 }
 
 export class ArgoCDDeploymentAdapter implements ResourceAdapter<ArgoCDDeployment> {
-  validate(_gin: Gin, _resource: ArgoCDDeployment): Promise<void> {
-    return Promise.resolve();
+  async validate(_gin: Gin, resource: ArgoCDDeployment): Promise<void> {
+    // If appsets are enabled in any namespace, so must be applications.
+    const appsInAnyNamespace = resource.spec.values?.configs?.params?.["application.namespaces"] !== undefined;
+    if (
+      resource.spec.values?.configs?.params?.["applicationsetcontroller.namespaces"] !== undefined &&
+      !appsInAnyNamespace
+    ) {
+      throw new Error(
+        '.spec.values.configs.params."applicationsetcontroller.namespaces" is set, but ' +
+          '.spec.values.configs.params."application.namespaces" is not. This is not compatible.',
+      );
+    }
+
+    Object.entries(resource.spec.rbac?.roles || {}).forEach(([roleName, role]) => {
+      role.rules.forEach((rule) => validateRBACRule(rule, appsInAnyNamespace, roleName));
+    });
+
+    return await Promise.resolve();
   }
 
   generate(_gin: Gin, resource: ArgoCDDeployment): Promise<KubernetesObject[]> {
@@ -224,6 +305,22 @@ export class ArgoCDDeploymentAdapter implements ResourceAdapter<ArgoCDDeployment
             ),
           });
         }
+      }
+    }
+
+    if (spec.rbac) {
+      values.configs.rbac = values.configs.rbac || {};
+      const rbac = values.configs.rbac;
+      if (spec.rbac.defaultRole !== undefined) {
+        rbac["policy.default"] = "role:" + spec.rbac.defaultRole;
+      }
+      if (spec.rbac.roles !== undefined && Object.keys(spec.rbac.roles).length > 0) {
+        rbac["policy.csv"] = Object.entries(spec.rbac.roles).flatMap(([roleName, role]) => {
+          return [
+            ...role.rules.map((rule) => generateRBACPolicyEntry(`role:${roleName}`, rule)),
+            ...role.subjects.map((subject) => `g, ${subject}, role:${roleName}`),
+          ];
+        }).join("\n");
       }
     }
 
