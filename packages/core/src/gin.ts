@@ -207,11 +207,24 @@ export class Gin {
   /**
    * Returns a promise that resolves when all packages have been loaded.
    */
-  async ready(): Promise<void> {
-    if (this.pendingPackages) {
-      await Promise.all(this.pendingPackages);
-      this.pendingPackages = [];
-    }
+  get ready() {
+    return (async () => {
+      if (this.pendingPackages) {
+        await Promise.all(this.pendingPackages);
+        this.pendingPackages = [];
+      }
+    })();
+  }
+
+  /**
+   * Returns a promise that resolves when all resources have been emitted.
+   */
+  get done() {
+    return (async () => {
+      // Ensure all pending emits are completed.
+      await Promise.all(this.pendingEmits);
+      this.pendingEmits = [];
+    })();
   }
 
   /**
@@ -225,7 +238,7 @@ export class Gin {
     resource: T,
     autoLoad: boolean = true,
   ): Promise<ResourceAdapter<T> | undefined> {
-    await this.ready();
+    await this.ready;
     const module = this.modules.find((m) => m.hasAdapter(resource));
     if (!module && autoLoad) {
       const packageName = this.resolvePackageNameFromApiVersion(resource.apiVersion);
@@ -395,9 +408,28 @@ export class Gin {
   }
 
   /**
-   * Runs the Gin pipeline, executing the provided callback function with the Gin instance. This method is the main
-   * entrypoint for running a Gin pipeline and is preferred over performing the same operations manually as it
-   * ensures warnings are printed after the pipeline execution and the sink is closed properly.
+   * Print the warnings collected during the pipeline execution to the console.
+   */
+  printWarnings(): Promise<void> {
+    if (this.warnings.length > 0) {
+      console.warn("Warnings during Gin pipeline execution:");
+      for (const warning of this.warnings) {
+        console.warn(`- ${warning}`);
+      }
+    }
+    return Promise.resolve();
+  }
+
+  /**
+   * This is a convenience entrypoint for running a Gin pipeline which parses command-line arguments (see
+   * {@link RunArgs}) and sets up a {@link StdoutSink} accordingly. The `callback` function is executed with the
+   * Gin instance as its argument, allowing it to use it to emit Kubernetes resources which are processed and
+   * forwarded to the sink.
+   *
+   * When the callback function completes, the sink is closed and any warnings collected during the pipeline
+   * execution are printed to the console.
+   *
+   * This is a shorthand of using {@link withSink}, awaiting {@link done} and {@link printWarnings} manually.
    */
   async run(
     callback: (gin: Gin) => void | Promise<void>,
@@ -416,17 +448,8 @@ export class Gin {
     }
     finally {
       this.sink.close();
-
-      // Wait for all pending emits to complete
-      await Promise.all(this.pendingEmits);
-
-      // Print warnings if any were collected
-      if (this.warnings.length > 0) {
-        console.warn("Warnings during Gin pipeline execution:");
-        for (const warning of this.warnings) {
-          console.warn(`- ${warning}`);
-        }
-      }
+      await this.done;
+      await this.printWarnings();
     }
   }
 }
@@ -436,11 +459,15 @@ export class Gin {
  */
 interface RunArgs {
   /**
+   * `-m`, `--keep-gin-metadata`
+   *
    * Whether to keep the `gin` metadata field in emitted resources.
    */
   keepGinMetadata: boolean;
 
   /**
+   * `-p`, `--emit-parents`
+   *
    * Whether to emit resources that have been processed by a {@link ResourceAdapter}.
    */
   emitParents: boolean;
