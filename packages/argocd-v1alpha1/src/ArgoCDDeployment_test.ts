@@ -17,27 +17,23 @@ Deno.test("ArgoCDDeploymentAdapter", async () => {
       chart: {
         version: "8.0.14",
       },
-      common: {
-        adminPassword: {
-          bcryptHash: "$2a$10$EIX9z5Z1b7f8Q0j3e4Y5Uu",
-        },
-        configManagementPlugins: [
-          {
-            name: "cmp-example",
-            image: "ghcr.io/example/cmp-example:latest",
-            env: {
-              EXAMPLE_ENV_VAR: "example-value",
-            },
-            secretEnv: {
-              SECRET_EXAMPLE: SecretValue.of("secret-value"),
-            },
+      adminPasswordBcryptHash: "$2a$10$EIX9z5Z1b7f8Q0j3e4Y5Uu",
+      configManagementPlugins: [
+        {
+          name: "cmp-example",
+          image: "ghcr.io/example/cmp-example:latest",
+          env: {
+            EXAMPLE_ENV_VAR: "example-value",
           },
-        ],
-        ingress: {
-          enabled: true,
-          ingressClassName: "nginx",
-          hostname: "argocd.local",
+          secretEnv: {
+            SECRET_EXAMPLE: SecretValue.of("secret-value"),
+          },
         },
+      ],
+      ingress: {
+        enabled: true,
+        ingressClassName: "nginx",
+        hostname: "argocd.local",
       },
       values: {
         server: {

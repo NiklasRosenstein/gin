@@ -48,56 +48,43 @@ export interface ArgoCDDeploymentSpec {
   };
 
   /**
-   * The configuration options in this field server as a convenient short-hand for the most common configuration
-   * options. All of the same settings can be configured in the {@link ArgoCDDeploymentSpec#values} field as well,
-   * just sometimes a little more complicated.
+   * Bcrypt-encoded password for the `admin` user in the ArgoCD server. This is a required field.
+   *
+   * Note: ArgoCD also expects a "passwordMtime" field to be set to determine when the password was last
+   * modified, causing it to update the `admin` user password. You don't need to set this field, as this
+   * adapter will encode the value into a timestamp.
    */
-  common: CommonConfig;
+  adminPasswordBcryptHash: string;
+
+  /**
+   * Override the default known hosts from the ArgoCD chart. The default includes `ssh.github.com`, `github.com`,
+   * `bitbucket.org`, `ssh.dev.azure.com` and `vs-ssh.visualstudio.com`. If you want to add more hosts to this
+   * list, use {@link extraHosts} instead.
+   */
+  sshKnownHosts?: string[];
+
+  /**
+   * Add additional hosts to the known hosts list.
+   */
+  sshExtraHosts?: string[];
+
+  /**
+   * Shorthand ingress configuration for the ArgoCD server. This is a convenience field that will be merged
+   * over the values in {@link ArgoCDDeploymentSpec#values.server.ingress}.
+   */
+  ingress?: IngressConfig;
+
+  /**
+   * Configuration management plugins to install in the ArgoCD repo-server. This is a convenience field that will
+   * be merged over the values in {@link ArgoCDDeploymentSpec#values.repoServer.extraContainers}.
+   */
+  configManagementPlugins?: ConfigManagementPluginSpec[];
 
   /**
    * The values for the Helm chart. Configuration options defined with {@link ArgoCDDeploymentSpec#common} are
    * merged over the values in this field.
    */
   values?: ArgoCDChartValues;
-}
-
-export interface CommonConfig {
-  adminPassword: {
-    /**
-     * Configure the password for the `admin` user in the ArgoCD server. This field is required. You can safe
-     * hard-code a bcrypted password here, or load a secret value using a {@link SecretProvider} and encode the
-     * value at runtime using [jsr:@stdext/crypto/hash/bcrypt](https://jsr.io/@stdext/crypto).
-     */
-    bcryptHash: string;
-
-    /**
-     * The modification timestamp of the password lets ArgoCD know when the password has changed and needs to
-     * be updated in the `admin` user. Updating this value is cumbersome, so if you don't specify a value, we
-     * will automatically calculate a timestamp based on the value of {@link bcryptHash}. The resulting timestamp
-     * will not mean anything, but it will ensure that the password is updated.
-     *
-     * The timestamp format must be like `YYYY-MM-DDTHH:mm:ssZ`, e.g. `2023-10-01T12:00:00Z`.
-     */
-    mtime?: string;
-  };
-
-  ssh?: {
-    /**
-     * Override the default known hosts from the ArgoCD chart. The default includes `ssh.github.com`, `github.com`,
-     * `bitbucket.org`, `ssh.dev.azure.com` and `vs-ssh.visualstudio.com`. If you want to add more hosts to this
-     * list, use {@link extraHosts} instead.
-     */
-    knownHosts?: string[];
-
-    /**
-     * Add additional hosts to the known hosts list.
-     */
-    extraHosts?: string[];
-  };
-
-  ingress?: IngressConfig;
-
-  configManagementPlugins?: ConfigManagementPluginSpec[];
 }
 
 export interface ConfigManagementPluginSpec {
@@ -148,39 +135,34 @@ export class ArgoCDDeploymentAdapter implements ResourceAdapter<ArgoCDDeployment
     }
 
     const values = spec.values ? deepClone(spec.values) : {};
-    const common = spec.common;
 
     values.configs = values.configs || {};
     values.configs.secret = values.configs.secret || {};
-    values.configs.secret.argocdServerAdminPassword = SecretValue.of(common.adminPassword.bcryptHash);
-    if (common.adminPassword.mtime) {
-      values.configs.secret.argocdServerAdminPasswordMtime = common.adminPassword.mtime;
-    }
-    else {
-      // Calculate a number from the adminPassword.bcryptHash between 0 and the maximum timestamp value.
-      const hash = common.adminPassword.bcryptHash;
-      const hashNumber = Array.from(hash).reduce((acc, char) => acc + char.charCodeAt(0), 0);
-      const maxTimestamp = 253402300799; // 9999-12-31T23:59:59Z in seconds
-      values.configs.secret.argocdServerAdminPasswordMtime = new Date(hashNumber % maxTimestamp * 1000).toISOString();
-    }
+    values.configs.secret.argocdServerAdminPassword = SecretValue.of(spec.adminPasswordBcryptHash);
 
-    if (common.ssh?.knownHosts) {
+    // Calculate a number from the adminPassword.bcryptHash between 0 and the maximum timestamp value.
+    const hash = spec.adminPasswordBcryptHash;
+    const hashNumber = Array.from(hash).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const maxTimestamp = 253402300799; // 9999-12-31T23:59:59Z in seconds
+    values.configs.secret.argocdServerAdminPasswordMtime = new Date(hashNumber % maxTimestamp * 1000).toISOString();
+
+    if (spec.sshKnownHosts) {
       values.configs.ssh = values.configs.ssh || {};
-      values.configs.ssh.knownHosts = common.ssh.knownHosts.join("\n");
+      values.configs.ssh.knownHosts = spec.sshKnownHosts.join("\n");
     }
 
-    if (common.ssh?.extraHosts) {
+    if (spec.sshExtraHosts) {
       values.configs.ssh = values.configs.ssh || {};
-      values.configs.ssh.extraHosts = common.ssh.extraHosts.join("\n");
+      values.configs.ssh.extraHosts = spec.sshExtraHosts.join("\n");
     }
 
-    if (common.ingress) {
+    if (spec.ingress) {
       values.server = values.server || {};
-      values.server.ingress = common.ingress;
+      values.server.ingress = spec.ingress;
     }
 
     const secrets: KubernetesObject[] = [];
-    if (common.configManagementPlugins) {
+    if (spec.configManagementPlugins) {
       // Starting with v2.4, do NOT mount the same tmp volume as the repo-server container. The filesystem separation helps
       // mitigate path traversal attacks. See
       // https://argo-cd.readthedocs.io/en/stable/operator-manual/config-management-plugins/#register-the-plugin-sidecar
@@ -192,7 +174,7 @@ export class ArgoCDDeploymentAdapter implements ResourceAdapter<ArgoCDDeployment
       });
 
       values.repoServer.extraContainers = values.repoServer.extraContainers || [];
-      for (const cmp of common.configManagementPlugins) {
+      for (const cmp of spec.configManagementPlugins) {
         values.repoServer.extraContainers.push({
           name: cmp.name,
           image: cmp.image,
