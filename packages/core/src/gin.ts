@@ -289,10 +289,10 @@ export class Gin {
    *
    * @param resource - The Kubernetes resource to emit.
    */
-  async emit<T extends KubernetesObject>(resource: T): Promise<void> {
+  async emit<T extends KubernetesObject>(resource: T, options?: { emitterStackDepth?: number }): Promise<void> {
     resource = deepClone(resource);
     resource.gin = resource.gin || {};
-    resource.gin.emittedFrom = getCallerFileAndLine();
+    resource.gin.emittedFrom = getCallerFileAndLine((options?.emitterStackDepth || 0) + 1);
 
     // Check if we emitted this resource before. If we did, we issue a warning.
     // TODO: Produce structured warnings, so we can include the resource's Gin metadata.
@@ -376,9 +376,12 @@ export class Gin {
   /**
    * Emits multiple Kubernetes resources at once.
    */
-  async emitMany<T extends KubernetesObject>(resources: T[] | AsyncIterable<T> | Iterable<T>): Promise<void> {
+  async emitMany<T extends KubernetesObject>(
+    resources: T[] | AsyncIterable<T> | Iterable<T>,
+    options?: { emitterStackDepth?: number },
+  ): Promise<void> {
     for await (const resource of resources) {
-      await this.emit(resource);
+      await this.emit(resource, { ...options, emitterStackDepth: (options?.emitterStackDepth || 0) + 1 });
     }
   }
 
