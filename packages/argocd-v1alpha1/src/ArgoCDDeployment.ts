@@ -7,7 +7,7 @@
 
 import { type Gin, type KubernetesObject, type ObjectMeta, type ResourceAdapter, SecretValue } from "@gin/core";
 import type { ArgoCDChartValues, IngressConfig } from "./values.ts";
-import { generateRBACPolicyEntry, type RBACRule, validateRBACRule } from "./rbac.ts";
+import { generateRBACPolicyEntry, type RBACRole, validateRBACRule } from "./rbac.ts";
 import type { HelmChart } from "@gin/helm-v1alpha1";
 import { deepClone } from "@gin/core/utils";
 
@@ -99,44 +99,7 @@ export interface ArgoCDDeploymentSpec {
     /**
      * Configure roles, what subjects the roles apply to and the rules for the role.
      */
-    roles?: Record<string, {
-      /**
-       * A list of usernames and/or group names that the role is applied to.
-       *
-       * @example
-       * ```ts
-       * ["admin", "my-org:team-qa", "user@example.org"]
-       * ```
-       */
-      subjects: string[];
-
-      /**
-       * The list of rules that define the permissions for the role.
-       *
-       * @example
-       * ```ts
-       * [
-       *   {
-       *     action: "sync",
-       *     resource: "applications",
-       *     object: "my-project/*",
-       *     effect: "allow",
-       *   },
-       *   {
-       *     action: "delete",
-       *     resource: "applications",
-       *     subresource: "/*\/Pod\/*\/*",
-       *     object: "my-project/*",
-       *     effect: "allow",
-       *   },
-       * ]
-       * ```
-       *
-       * This allows the users with the assigned role to sync applications in the `my-project` project, as well as
-       * delete Pods in the applications.
-       */
-      rules: RBACRule[];
-    }>;
+    roles?: Record<string, RBACRole>;
 
     /**
      * OIDC scopes to examine during rbac enforcement (in addition to `sub` scope).

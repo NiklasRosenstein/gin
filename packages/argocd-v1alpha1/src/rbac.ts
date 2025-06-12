@@ -1,4 +1,46 @@
 /**
+ * Represents an RBAC role that defines its rules and the subjects it applies to.g
+ */
+export interface RBACRole {
+  /**
+   * A list of usernames and/or group names that the role is applied to.
+   *
+   * @example
+   * ```ts
+   * ["admin", "my-org:team-qa", "user@example.org"]
+   * ```
+   */
+  subjects: string[];
+
+  /**
+   * The list of rules that define the permissions for the role.
+   *
+   * @example
+   * ```ts
+   * [
+   *   {
+   *     action: "sync",
+   *     resource: "applications",
+   *     object: "my-project/*",
+   *     effect: "allow",
+   *   },
+   *   {
+   *     action: "delete",
+   *     resource: "applications",
+   *     subresource: "/*\/Pod\/*\/*",
+   *     object: "my-project/*",
+   *     effect: "allow",
+   *   },
+   * ]
+   * ```
+   *
+   * This allows the users with the assigned role to sync applications in the `my-project` project, as well as
+   * delete Pods in the applications.
+   */
+  rules: RBACRule[];
+}
+
+/**
  * Represents a single RBAC rule that allows or denies access to a resource or action in ArgoCD.
  */
 export interface RBACRule {
