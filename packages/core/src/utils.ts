@@ -16,12 +16,30 @@ export function isValidKubernetesLabelValue(value: string): boolean {
 
 /**
  * Returns the filename and line number of the caller of this function.
+ *
+ * @param depth - The number of stack frames to go back. Default is 1, which means the immediate caller.
  */
 export function getCallerFileAndLine(depth: number = 1): string {
   const trace = new StackTracey(new Error());
-  const file = trace.items[depth + 1]?.file || "<unknown>";
-  const line = trace.items[depth + 1]?.line || "??";
-  return `${file}:${line}`;
+
+  const format = (entry: StackTracey.Entry) => {
+    const file = entry?.file || "<unknown>";
+    const line = entry?.line || "??";
+    return `${file}:${line}`;
+  };
+
+  // We need to find the frame of the given depth, while ignoring the `eventLoopTick` frames which
+  // may mingle in between.
+  for (let i = 0; i < trace.items.length; i++) {
+    if (trace.items[i]?.callee === "eventLoopTick") {
+      continue; // Skip eventLoopTick frames
+    }
+    if (depth-- === 0) {
+      return format(trace.items[i]!);
+    }
+  }
+
+  return "<unknown file>:??"; // Fallback if no valid frame is found
 }
 
 /**

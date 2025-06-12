@@ -311,10 +311,10 @@ export class Gin {
    *
    * @param resource - The Kubernetes resource to emit.
    */
-  async emit<T extends KubernetesObject>(resource: T, options?: { emitterStackDepth?: number }): Promise<void> {
+  emit<T extends KubernetesObject>(resource: T, options?: { emitterStackDepth?: number }): Promise<void> {
     resource = deepClone(resource);
     resource.gin = resource.gin || {};
-    resource.gin.emittedFrom = getCallerFileAndLine((options?.emitterStackDepth || 0) + 1);
+    resource.gin.emittedFrom = getCallerFileAndLine((options?.emitterStackDepth || 0) + 2);
 
     // Check if we emitted this resource before. If we did, we issue a warning.
     // TODO: Produce structured warnings, so we can include the resource's Gin metadata.
@@ -392,19 +392,23 @@ export class Gin {
     // We store the promise in `pendingEmits` to ensure that all emits are awaited at the end of the pipeline.
     // This is so we don't require the user to await the emit themselves.
     this.pendingEmits.push(promise);
-    return await promise;
+    return promise;
   }
 
   /**
    * Emits multiple Kubernetes resources at once.
    */
-  async emitMany<T extends KubernetesObject>(
+  emitMany<T extends KubernetesObject>(
     resources: T[] | AsyncIterable<T> | Iterable<T>,
     options?: { emitterStackDepth?: number },
   ): Promise<void> {
-    for await (const resource of resources) {
-      await this.emit(resource, { ...options, emitterStackDepth: (options?.emitterStackDepth || 0) + 1 });
-    }
+    const promise = (async () => {
+      for await (const resource of resources) {
+        await this.emit(resource, { ...options, emitterStackDepth: (options?.emitterStackDepth || 0) + 1 });
+      }
+    })();
+    this.pendingEmits.push(promise);
+    return promise;
   }
 
   /**
