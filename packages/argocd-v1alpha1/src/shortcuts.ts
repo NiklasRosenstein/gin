@@ -289,7 +289,6 @@ export const STANDARD_IGNORE_DIFFERENCES: ResourceIgnoreDifferences[] = [
     ],
   },
   {
-    group: "",
     kind: "PersistentVolumeClaim",
     jqPathExpressions: [
       ".spec.volumeName", // Might be set automatically and is immutable after the fact
