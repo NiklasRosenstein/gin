@@ -219,7 +219,9 @@ export class HelmChartAdapter implements ResourceAdapter<UntypedHelmChart> {
     }
 
     // Parse YAML output
-    const docs = (parseAll(stdoutStr) as unknown[]).filter((doc) => doc != null) as KubernetesObject[];
+    const docs = (parseAll(stdoutStr, { allowDuplicateKeys: true }) as unknown[]).filter((doc) =>
+      doc != null
+    ) as KubernetesObject[];
 
     // Add labels from resource.metadata.labels
     if (resource.metadata.labels) {
