@@ -64,3 +64,19 @@ export class StdoutSink implements Sink {
     // No specific action needed for stdout sink
   }
 }
+
+/**
+ * A sink that captures all emitted resources in memory. This is useful for testing or debugging purposes.
+ */
+export class CaptureSink implements Sink {
+  captured: KubernetesObject[] = [];
+
+  accept<T extends KubernetesObject>(resource: T): Promise<void> {
+    this.captured.push(resource);
+    return Promise.resolve();
+  }
+
+  close(): void {
+    // No-op
+  }
+}

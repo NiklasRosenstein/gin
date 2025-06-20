@@ -4,7 +4,7 @@
 
 import { Module, type ModuleOptions, type ResourceAdapter } from "./module.ts";
 import { escape } from "@std/regexp/escape";
-import { type Sink, StdoutSink } from "./sink.ts";
+import { CaptureSink, type Sink, StdoutSink } from "./sink.ts";
 import { type KubernetesObject, ResourceLocator } from "./types.ts";
 import { deepClone, dropUndefined, getCallerFileAndLine, replaceValues } from "./utils.ts";
 import { parseArgs } from "@std/cli";
@@ -455,6 +455,36 @@ export class Gin {
       await this.done;
       await this.printWarnings();
     }
+  }
+
+  /**
+   * A helper function that is mostly useful for writing tests. Creates a new Gin instance with a {@link CaptureSink}
+   * and emits the given resources to it. The captured resources are returned as an array.
+   */
+  static async staticCaptureEmitMany<T extends KubernetesObject>(
+    resources: T[] | AsyncIterable<T> | Iterable<T>,
+    options?: { emitterStackDepth?: number; keepGinMetadataAnnotation?: boolean; keepGinMetadata?: boolean },
+  ): Promise<T[]> {
+    const gin = new Gin().withSink(new CaptureSink());
+    await gin.emitMany(resources, { ...options, emitterStackDepth: (options?.emitterStackDepth || 0) + 1 });
+    const docs = (gin.sink as CaptureSink).captured as T[];
+    if (!(options?.keepGinMetadataAnnotation ?? false)) {
+      // Remove the `gin` metadata annotation from the resources.
+      for (const doc of docs) {
+        if (doc.metadata.annotations) {
+          delete doc.metadata.annotations[GIN_METADATA_ANNOTATION];
+        }
+      }
+    }
+    if (!(options?.keepGinMetadata ?? false)) {
+      // Remove the `gin` metadata field from the resources.
+      for (const doc of docs) {
+        if (doc.gin) {
+          delete doc.gin;
+        }
+      }
+    }
+    return docs;
   }
 }
 

@@ -1,9 +1,9 @@
 import { assertEquals } from "@std/assert/equals";
 import { dropUndefined } from "./utils.ts";
-import type { KubernetesObject, Sink } from "@gin/core";
 import { Gin } from "./gin.ts";
 import { assert } from "@std/assert/assert";
 import { assertStringIncludes } from "@std/assert/string-includes";
+import { CaptureSink } from "./sink.ts";
 
 Deno.test(function testDropUndefinedOnArray() {
   assertEquals(
@@ -13,19 +13,6 @@ Deno.test(function testDropUndefinedOnArray() {
 });
 
 Deno.test("getCallerFileAndLine skips eventLoopTick frames", async () => {
-  class CaptureSink implements Sink {
-    captured: KubernetesObject[] = [];
-
-    accept<T extends KubernetesObject>(resource: T): Promise<void> {
-      this.captured.push(resource);
-      return Promise.resolve();
-    }
-
-    close(): void {
-      // No-op
-    }
-  }
-
   const sink = new CaptureSink();
   const gin = new Gin().withSink(sink);
   await gin.emit({ apiVersion: "v1", kind: "Pod", metadata: { name: "test-pod" } });
