@@ -2,6 +2,7 @@ import { _ } from "@gin/core";
 import type {
   Affinity,
   Container,
+  ContainerPort,
   Gin,
   KubernetesObject,
   Pod,
@@ -44,6 +45,11 @@ export interface WebApp extends KubernetesObject {
      * The port on which the main web application will listen. Defaults to 8080.
      */
     port?: number;
+
+    /**
+     * Extra ports to expose in the main container. This is useful for applications that listen on multiple ports.
+     */
+    extraPorts?: ContainerPort[];
 
     /**
      * The hostname or the domain for the web application.
@@ -290,6 +296,11 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
             port: resource.spec.port ?? 8080,
             targetPort: resource.spec.port ?? 8080,
           },
+          ...(resource.spec.extraPorts || []).map((port) => ({
+            name: port.name ?? `port-${port.containerPort}`,
+            port: port.containerPort,
+            targetPort: port.name ?? port.containerPort,
+          })),
         ],
         type: "ClusterIP", // Default service type
       },
