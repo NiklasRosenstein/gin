@@ -35,6 +35,11 @@ export interface WebApp extends KubernetesObject {
     imagePullPolicy?: "Always" | "IfNotPresent" | "Never";
 
     /**
+     * The command to run in the main container. If not specified, the default command from the image will be used.
+     */
+    command?: string[];
+
+    /**
      * The port on which the main web application will listen. Defaults to 8080.
      */
     port?: number;
@@ -219,6 +224,7 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
               name: "web",
               image: resource.spec.image,
               imagePullPolicy: resource.spec.imagePullPolicy ?? "IfNotPresent",
+              command: resource.spec.command,
               ports: [
                 {
                   containerPort: resource.spec.port ?? 8080,
