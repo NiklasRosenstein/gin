@@ -173,7 +173,7 @@ Deno.test("WebAppConverter - should generate deployment with correct configurati
                   name: "shared-data",
                   mountPath: "/data",
                 },
-              ]
+              ],
             },
           ],
           tolerations: [
