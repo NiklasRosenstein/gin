@@ -1,6 +1,7 @@
 import { _ } from "@gin/core";
 import type {
   Affinity,
+  Container,
   Gin,
   KubernetesObject,
   Pod,
@@ -162,6 +163,16 @@ export interface WebApp extends KubernetesObject {
      * Define volume mounts for the main container.
      */
     volumeMounts?: VolumeMount[];
+
+    /**
+     * Init containers.
+     */
+    initContainers?: Container[];
+
+    /**
+     * Extra containers next to the main container in the pod.
+     */
+    extraContainers?: Container[];
   };
 }
 
@@ -220,34 +231,38 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
             annotations: resource.spec.podAnnotations,
           },
           spec: {
-            containers: [dropUndefined({
-              name: "web",
-              image: resource.spec.image,
-              imagePullPolicy: resource.spec.imagePullPolicy ?? "IfNotPresent",
-              command: resource.spec.command,
-              ports: [
-                {
-                  containerPort: resource.spec.port ?? 8080,
+            containers: [
+              dropUndefined({
+                name: "web",
+                image: resource.spec.image,
+                imagePullPolicy: resource.spec.imagePullPolicy ?? "IfNotPresent",
+                command: resource.spec.command,
+                ports: [
+                  {
+                    containerPort: resource.spec.port ?? 8080,
+                  },
+                ],
+                env: resource.spec.env && Object.keys(resource.spec.env).length > 0
+                  ? Object.entries(resource.spec.env).map(([name, value]) => ({ name, value }))
+                  : undefined,
+                envFrom: [
+                  ...(
+                    secret ? [{ secretRef: { name: secret.metadata.name! } }] : []
+                  ),
+                  ...(
+                    (resource.spec.envFromSecrets ?? []).map((secretName) => ({ secretRef: { name: secretName } }))
+                  ),
+                ],
+                securityContext: {
+                  allowPrivilegeEscalation: false,
+                  runAsNonRoot: !resource.spec.allowRunAsRoot,
                 },
-              ],
-              env: resource.spec.env && Object.keys(resource.spec.env).length > 0
-                ? Object.entries(resource.spec.env).map(([name, value]) => ({ name, value }))
-                : undefined,
-              envFrom: [
-                ...(
-                  secret ? [{ secretRef: { name: secret.metadata.name! } }] : []
-                ),
-                ...(
-                  (resource.spec.envFromSecrets ?? []).map((secretName) => ({ secretRef: { name: secretName } }))
-                ),
-              ],
-              securityContext: {
-                allowPrivilegeEscalation: false,
-                runAsNonRoot: !resource.spec.allowRunAsRoot,
-              },
-              resources: resource.spec.resources,
-              volumeMounts: resource.spec.volumeMounts,
-            })],
+                resources: resource.spec.resources,
+                volumeMounts: resource.spec.volumeMounts,
+              }),
+              ...resource.spec.extraContainers ?? [],
+            ],
+            initContainers: resource.spec.initContainers,
             nodeName: resource.spec.nodeName,
             nodeSelector: resource.spec.nodeSelector,
             tolerations: resource.spec.tolerations,
