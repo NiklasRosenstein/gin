@@ -157,6 +157,7 @@ Deno.test("WebAppConverter - should generate deployment with correct configurati
             {
               name: "web",
               image: "nginxinc/nginx-unprivileged:stable-alpine",
+              imagePullPolicy: "IfNotPresent",
               ports: [{ containerPort: 3000 }],
               env: [
                 {
