@@ -142,7 +142,7 @@
       },
       "packages/webapp-v1alpha1": {
         "dependencies": [
-          "jsr:@gin/core@0.3"
+          "jsr:@gin/core@~0.3.1"
         ]
       }
     }

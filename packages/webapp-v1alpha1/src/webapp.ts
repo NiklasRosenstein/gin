@@ -10,6 +10,8 @@ import type {
   Service,
   Toleration,
   TopologySpreadConstraint,
+  Volume,
+  VolumeMount,
 } from "@gin/core";
 import { dropUndefined } from "@gin/core/utils";
 
@@ -140,6 +142,16 @@ export interface WebApp extends KubernetesObject {
       limits?: Record<string, string>;
       requests?: Record<string, string>;
     };
+
+    /**
+     * Define volumes to be mountable with {@link volumeMounts} in the main container.
+     */
+    volumes?: Volume[];
+
+    /**
+     * Define volume mounts for the main container.
+     */
+    volumeMounts?: VolumeMount[];
   };
 }
 
@@ -217,12 +229,14 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
                 runAsNonRoot: !resource.spec.allowRunAsRoot,
               },
               resources: resource.spec.resources,
+              volumeMounts: resource.spec.volumeMounts,
             })],
             nodeName: resource.spec.nodeName,
             nodeSelector: resource.spec.nodeSelector,
             tolerations: resource.spec.tolerations,
             affinity: resource.spec.affinity,
             topologySpreadConstraints: resource.spec.topologySpreadConstraints,
+            volumes: resource.spec.volumes,
           },
         }),
       },

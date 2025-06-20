@@ -102,6 +102,28 @@ Deno.test("WebAppConverter - should generate deployment with correct configurati
       host: "example.com",
       port: 3000,
       env: { NODE_ENV: "production" },
+      tolerations: [
+        {
+          key: "example.com/special",
+          operator: "Equal",
+          value: "true",
+          effect: "NoSchedule",
+        },
+      ],
+      volumes: [
+        {
+          name: "shared-data",
+          persistentVolumeClaim: {
+            claimName: "shared-data-pvc",
+          },
+        },
+      ],
+      volumeMounts: [
+        {
+          name: "shared-data",
+          mountPath: "/data",
+        },
+      ],
     },
   });
 
@@ -145,6 +167,28 @@ Deno.test("WebAppConverter - should generate deployment with correct configurati
               securityContext: {
                 allowPrivilegeEscalation: false,
                 runAsNonRoot: true,
+              },
+              volumeMounts: [
+                {
+                  name: "shared-data",
+                  mountPath: "/data",
+                },
+              ]
+            },
+          ],
+          tolerations: [
+            {
+              key: "example.com/special",
+              operator: "Equal",
+              value: "true",
+              effect: "NoSchedule",
+            },
+          ],
+          volumes: [
+            {
+              name: "shared-data",
+              persistentVolumeClaim: {
+                claimName: "shared-data-pvc",
               },
             },
           ],
