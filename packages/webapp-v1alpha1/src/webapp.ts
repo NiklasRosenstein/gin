@@ -1,4 +1,16 @@
-import type { Gin, KubernetesObject, ResourceAdapter, SecretValue } from "@gin/core";
+import { _ } from "@gin/core";
+import type {
+  Affinity,
+  Gin,
+  KubernetesObject,
+  Pod,
+  ResourceAdapter,
+  Secret,
+  SecretValue,
+  Service,
+  Toleration,
+  TopologySpreadConstraint,
+} from "@gin/core";
 import { dropUndefined } from "@gin/core/utils";
 
 export interface WebApp extends KubernetesObject {
@@ -106,6 +118,22 @@ export interface WebApp extends KubernetesObject {
     nodeSelector?: Record<string, string>;
 
     /**
+     * Tolerations for the WebApp pods. This is useful for scheduling the pods on nodes with specific taints.
+     */
+    tolerations?: Toleration[];
+
+    /**
+     * Affinity rules for the WebApp pods. This is useful for scheduling the pods on specific nodes or avoiding
+     * certain nodes.
+     */
+    affinity?: Affinity;
+
+    /**
+     * Topology spread constraints for the WebApp pods.
+     */
+    topologySpreadConstraints?: TopologySpreadConstraint[];
+
+    /**
      * Optional resources to apply to the WebApp container.
      */
     resources?: {
@@ -117,6 +145,9 @@ export interface WebApp extends KubernetesObject {
 
 export class WebAppConverter implements ResourceAdapter<WebApp> {
   async validate(_gin: Gin, resource: WebApp): Promise<void> {
+    if (!resource.metadata.name) {
+      throw new Error("WebApp metadata.name is required");
+    }
     if (!resource.metadata.namespace) {
       throw new Error("WebApp metadata.namespace is required");
     }
@@ -127,10 +158,10 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
   }
   generate(_gin: Gin, resource: WebApp): Promise<KubernetesObject[]> {
     const selectorLabels = {
-      [`${resource.apiVersion}.${resource.kind}`]: resource.metadata.name,
+      [`${resource.apiVersion}.${resource.kind}`]: resource.metadata.name!,
     };
 
-    let secret: KubernetesObject | undefined = undefined;
+    let secret: Secret | undefined = undefined;
     if (resource.spec.secretEnv && Object.keys(resource.spec.secretEnv).length > 0) {
       secret = dropUndefined({
         apiVersion: "v1",
@@ -140,8 +171,8 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
           namespace: resource.metadata.namespace,
         },
         type: "Opaque",
-        data: Object.fromEntries(
-          Object.entries(resource.spec.secretEnv).map(([key, value]) => [key, value.secretAsBase64()]),
+        stringData: Object.fromEntries(
+          Object.entries(resource.spec.secretEnv).map(([key, value]) => [key, value]),
         ),
       });
     }
@@ -158,7 +189,7 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
         selector: {
           matchLabels: selectorLabels,
         },
-        template: {
+        template: _<Pick<Pod, "metadata" | "spec">>({
           metadata: {
             labels: {
               ...selectorLabels,
@@ -190,11 +221,11 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
             nodeName: resource.spec.nodeName,
             nodeSelector: resource.spec.nodeSelector,
           },
-        },
+        }),
       },
     });
 
-    const service: KubernetesObject = dropUndefined({
+    const service: Service = dropUndefined({
       apiVersion: "v1",
       kind: "Service",
       metadata: {

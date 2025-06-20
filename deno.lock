@@ -111,7 +111,7 @@
     "members": {
       "packages/argocd-v1alpha1": {
         "dependencies": [
-          "jsr:@gin/core@0.2",
+          "jsr:@gin/core@0.3",
           "jsr:@gin/helm-v1alpha1@0.2",
           "jsr:@std/assert@^1.0.13"
         ]
@@ -128,7 +128,7 @@
       },
       "packages/helm-v1alpha1": {
         "dependencies": [
-          "jsr:@gin/core@0.2",
+          "jsr:@gin/core@0.3",
           "jsr:@std/crypto@^1.0.5",
           "jsr:@std/path@^1.1.0",
           "jsr:@std/yaml@^1.0.7"
@@ -136,13 +136,13 @@
       },
       "packages/sops": {
         "dependencies": [
-          "jsr:@gin/core@0.2",
+          "jsr:@gin/core@0.3",
           "npm:jsonpath-plus@^10.3.0"
         ]
       },
       "packages/webapp-v1alpha1": {
         "dependencies": [
-          "jsr:@gin/core@0.2"
+          "jsr:@gin/core@0.3"
         ]
       }
     }

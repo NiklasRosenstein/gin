@@ -4,6 +4,6 @@
   "exports": "./src/mod.ts",
   "license": "MIT",
   "imports": {
-    "@gin/core": "jsr:@gin/core@^0.2.0"
+    "@gin/core": "jsr:@gin/core@^0.3.0"
   }
 }

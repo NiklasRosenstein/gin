@@ -7,7 +7,7 @@
   },
   "license": "MIT",
   "imports": {
-    "@gin/core": "jsr:@gin/core@^0.2.0",
+    "@gin/core": "jsr:@gin/core@^0.3.0",
     "jsonpath-plus": "npm:jsonpath-plus@^10.3.0"
   }
 }
