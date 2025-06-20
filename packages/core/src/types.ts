@@ -415,6 +415,16 @@ export interface SecurityContext {
   };
 }
 
+export interface VolumeMount {
+  mountPath: string;
+  mountPropagation?: "None" | "HostToContainer" | "Bidirectional";
+  name: string;
+  readOnly?: boolean;
+  recursiveReadOnly?: boolean;
+  subPath?: string;
+  subPathExpr?: string;
+}
+
 export interface Container {
   args?: string[];
   command?: string[];
@@ -438,15 +448,7 @@ export interface Container {
   terminationMessagePolicy?: "File" | "FallbackToLogsOnError";
   tty?: boolean;
   volumeDevices?: { devicePath: string; name: string }[];
-  volumeMounts?: {
-    mountPath: string;
-    mountPropagation?: "None" | "HostToContainer" | "Bidirectional";
-    name: string;
-    readOnly?: boolean;
-    recursiveReadOnly?: boolean;
-    subPath?: string;
-    subPathExpr?: string;
-  }[];
+  volumeMounts?: VolumeMount[];
   workingDir?: string;
 }
 
