@@ -1,3 +1,5 @@
+import type { SecretValue } from "@gin/core";
+
 /**
  * A way to represent the unique identifier of a Kubernetes resource.
  */
@@ -33,6 +35,12 @@ export class ResourceLocator {
   }
 
   static of<T extends KubernetesObject>(resource: T): ResourceLocator {
+    if (!resource.apiVersion || !resource.kind || !resource.metadata) {
+      throw new Error("Resource must have apiVersion, kind, and metadata fields.");
+    }
+    if (!resource.metadata.name) {
+      throw new Error("Resource must have a metadata.name field.");
+    }
     return new ResourceLocator(
       resource.apiVersion,
       resource.kind,
@@ -110,7 +118,7 @@ export interface KubernetesObject {
 }
 
 export interface ObjectMeta {
-  name: string;
+  name?: string;
   namespace?: string;
   labels?: Record<string, string>;
   annotations?: Record<string, string>;
@@ -129,4 +137,616 @@ export interface OwnerReference {
   uid: string;
   controller?: boolean;
   blockOwnerDeletion?: boolean;
+}
+
+/**
+ * A ServicePort represents a port on a Kubernetes Service.
+ */
+export interface Condition {
+  lastTransitionTime: string;
+  message: string;
+  observedGeneration?: number;
+  reason: string;
+  status: "True" | "False" | "Unknown";
+  type: string;
+}
+
+/**
+ * A toleration is a way to tell Kubernetes that a pod can tolerate certain conditions.
+ */
+export interface Toleration {
+  key?: string;
+  operator?: "Equal" | "Exists";
+  value?: string;
+  effect?: "NoSchedule" | "PreferNoSchedule" | "NoExecute";
+  tolerationSeconds?: number;
+}
+
+/**
+ * Affinity is a way to specify how pods should be scheduled on nodes.
+ */
+export interface Affinity {
+  nodeAffinity?: {
+    requiredDuringSchedulingIgnoredDuringExecution?: {
+      nodeSelectorTerms: Array<{
+        matchExpressions: Array<{
+          key: string;
+          operator: "In" | "NotIn" | "Exists" | "DoesNotExist" | "Gt" | "Lt";
+          values?: string[];
+        }>;
+      }>;
+    };
+  };
+  podAffinity?: {
+    requiredDuringSchedulingIgnoredDuringExecution?: Array<{
+      labelSelector: {
+        matchLabels: Record<string, string>;
+      };
+      topologyKey: string;
+    }>;
+  };
+  podAntiAffinity?: {
+    requiredDuringSchedulingIgnoredDuringExecution?: Array<{
+      labelSelector: {
+        matchLabels: Record<string, string>;
+      };
+      topologyKey: string;
+    }>;
+  };
+}
+
+export interface Secret extends KubernetesObject {
+  apiVersion: "v1";
+  kind: "Secret";
+  /**
+   * e.g., "Opaque", "kubernetes.io/dockerconfigjson"
+   */
+  type?: string;
+  /**
+   * Base64-encoded secret data.
+   */
+  data?: Record<string, SecretValue>;
+  /**
+   * Plain-text secret data.
+   */
+  stringData?: Record<string, SecretValue>;
+  immutable?: boolean;
+}
+
+export interface ConfigMap extends KubernetesObject {
+  apiVersion: "v1";
+  kind: "ConfigMap";
+  /**
+   * Plain-text data that can be used as environment variables or configuration files.
+   */
+  data?: Record<string, string>;
+  /**
+   * Base64-encoded binary data that can be used as environment variables or configuration files.
+   */
+  binaryData?: Record<string, string>;
+  immutable?: boolean;
+}
+
+export interface ServicePort {
+  appProtocol?: string;
+  name?: string;
+  nodePort?: number;
+  port: number;
+  protocol?: "TCP" | "UDP" | "SCTP";
+  targetPort?: number | string;
+}
+
+export interface Service extends KubernetesObject {
+  apiVersion: "v1";
+  kind: "Service";
+  spec: {
+    allocateLoadBalancerNodePorts?: boolean;
+    clusterIP?: string;
+    clusterIps?: string[];
+    externalIPs?: string[];
+    externalName?: string;
+    externalTrafficPolicy?: "Cluster" | "Local";
+    healthCheckNodePort?: number;
+    internalTrafficPolicy?: "Cluster" | "Local";
+    ipFamilies?: string[];
+    ipFamilyPolicy?: "SingleStack" | "PreferDualStack" | "RequireDualStack";
+    loadBalancerClass?: string;
+    loadBalancerIP?: string;
+    loadBalancerSourceRanges?: string[];
+    ports?: ServicePort[];
+    sessionAffinity?: "None" | "ClientIP";
+    sessionAffinityConfig?: {
+      clientIP?: {
+        timeoutSeconds?: number;
+      };
+    };
+    trafficDistribution?: "PreferClose";
+    type?: "ClusterIP" | "NodePort" | "LoadBalancer" | "ExternalName";
+  };
+  status?: {
+    conditions?: Condition[];
+    loadBalancer?: {
+      ingress?: Array<{
+        ip?: string;
+        ipMode?: "VIP" | "Proxy";
+        hostname?: string;
+        ports: Array<{
+          port: number;
+          protocol: "TCP" | "UDP" | "SCTP";
+          error?: string;
+        }>;
+      }>;
+    };
+  };
+}
+
+export interface EnvVarSource {
+  configMapKeyRef?: {
+    key: string;
+    name?: string;
+    optional?: boolean;
+  };
+  fieldRef?: {
+    apiVersion?: string;
+    fieldPath: string;
+  };
+  resourceFieldRef?: {
+    containerName?: string;
+    divisor?: string;
+    resource: string | "limits.cpu" | "limits.memory" | "requests.cpu" | "requests.memory";
+  };
+  secretKeyRef?: {
+    key: string;
+    name: string;
+    optional?: boolean;
+  };
+}
+
+export interface EnvFromSource {
+  configMapRef?: {
+    name: string;
+    optional?: boolean;
+  };
+  prefix?: string;
+  secretRef?: {
+    name: string;
+    optional?: boolean;
+  };
+}
+
+export interface ExecAction {
+  command: string[];
+}
+
+export interface HTTPGetAction {
+  host?: string;
+  httpHeaders?: { name: string; value: string }[];
+  path?: string;
+  port: number | string;
+  scheme?: "HTTP" | "HTTPS";
+}
+
+export interface SleepAction {
+  seconds: number;
+}
+
+export interface TCPSocketAction {
+  host?: string;
+  port: number | string;
+}
+
+export interface GRPCAction {
+  port: number | string;
+  service?: string;
+}
+
+export interface LifecycleHandler {
+  exec?: ExecAction;
+  httpGet?: HTTPGetAction;
+  sleep?: SleepAction;
+  tcpSocket?: TCPSocketAction;
+}
+
+export interface Lifecycle {
+  postStart?: LifecycleHandler;
+  preStop?: LifecycleHandler;
+}
+
+export interface Probe {
+  exec?: ExecAction;
+  failureThreshold?: number;
+  grpc?: GRPCAction;
+  httpGet?: HTTPGetAction;
+  initialDelaySeconds?: number;
+  periodSeconds?: number;
+  successThreshold?: number;
+  tcpSocket?: TCPSocketAction;
+  terminationGracePeriodSeconds?: number;
+  timeoutSeconds?: number;
+}
+
+export interface ContainerPort {
+  containerPort: number;
+  hostIP?: string;
+  hostPort?: number;
+  name?: string;
+  protocol?: "TCP" | "UDP" | "SCTP";
+}
+
+export interface ResourceRequirements {
+  claims?: { name: string; request?: string }[];
+  limits?: Record<string, string>;
+  requests?: Record<string, string>;
+}
+
+type RestartPolicy = "Always" | "OnFailure" | "Never";
+
+export interface SecurityContext {
+  allowPrivilegeEscalation?: boolean;
+  appArmorProfile?: {
+    localhostProfile?: string;
+    type: "RuntimeDefault" | "Localhost" | "Unconfined";
+  };
+  capabilities?: {
+    add?: string[];
+    drop?: string[];
+  };
+  privileged?: boolean;
+  procMount?: "Default" | "Unmasked";
+  readOnlyRootFilesystem?: boolean;
+  runAsGroup?: number;
+  runAsNonRoot?: boolean;
+  runAsUser?: number;
+  seLinuxOptions?: {
+    level?: string;
+    role?: string;
+    type?: string;
+    user?: string;
+  };
+  seccompProfile?: {
+    type: "RuntimeDefault" | "Localhost" | "Unconfined";
+    localhostProfile?: string;
+  };
+  windowsOptions?: {
+    gmsaCredentialSpec?: string;
+    gmsaCredentialSpecName?: string;
+    hostProcess?: boolean;
+    runAsUserName?: string;
+  };
+}
+
+export interface Container {
+  args?: string[];
+  command?: string[];
+  env?: { name: string; value?: string; valueFrom?: EnvVarSource }[];
+  envFrom?: EnvFromSource[];
+  image?: string;
+  imagePullPolicy?: "Always" | "Never" | "IfNotPresent";
+  lifecycle?: Lifecycle;
+  livenessProbe?: Probe;
+  name: string;
+  ports: ContainerPort[];
+  readinessProbe?: Probe;
+  resizePolicy?: { resourceName: string | "cpu" | "memory"; restartPolicy: RestartPolicy | "NotRequired" }[];
+  resources?: ResourceRequirements;
+  restartPolicy?: RestartPolicy;
+  securityContext?: SecurityContext;
+  startupProbe?: Probe;
+  stdin?: boolean;
+  stdinOnce?: boolean;
+  terminationMessagePath?: string;
+  terminationMessagePolicy?: "File" | "FallbackToLogsOnError";
+  tty?: boolean;
+  volumeDevices?: { devicePath: string; name: string }[];
+  volumeMounts?: {
+    mountPath: string;
+    mountPropagation?: "None" | "HostToContainer" | "Bidirectional";
+    name: string;
+    readOnly?: boolean;
+    recursiveReadOnly?: boolean;
+    subPath?: string;
+    subPathExpr?: string;
+  }[];
+  workingDir?: string;
+}
+
+export interface EphemeralContainer extends Container {
+  /**
+   * If set, the name of the container from PodSpec that this ephemeral container targets. The ephemeral container will
+   * be run in the namespaces (IPC, PID, etc) of this container. If not set then the ephemeral container uses the
+   * namespaces configured in the Pod spec.
+   *
+   * The container runtime must implement support for this feature. If the runtime does not support namespace targeting
+   * then the result of setting this field is undefined.
+   */
+  targetContainerName?: string;
+}
+
+export interface PodDNSConfig {
+  nameservers?: string[];
+  searches?: string[];
+  options?: { name?: string; value?: string }[];
+}
+
+export interface PodSecurityContext {
+  appArmorProfile?: {
+    localhostProfile?: string;
+    type: "RuntimeDefault" | "Localhost" | "Unconfined";
+  };
+  fsGroup?: number;
+  fsgroupChangePolicy?: "OnRootMismatch" | "Always";
+  runAsGroup?: number;
+  runAsNonRoot?: boolean;
+  runAsUser?: number;
+  seLinuxChangePolicy?: "MountOption" | "Recursive";
+  seLinuxOptions?: {
+    level?: string;
+    role?: string;
+    type?: string;
+    user?: string;
+  };
+  seccompProfile?: {
+    type: "RuntimeDefault" | "Localhost" | "Unconfined";
+    localhostProfile?: string;
+  };
+  supplementalGroups?: number[];
+  supplementalGroupsPolicy?: "Merge" | "Strict";
+  sysctls?: { name: string; value: string }[];
+  windowsOptions?: {
+    gmsaCredentialSpec?: string;
+    gmsaCredentialSpecName?: string;
+    hostProcess?: boolean;
+    runAsUserName?: string;
+  };
+}
+
+export interface LabelSelector {
+  matchLabels?: Record<string, string>;
+  matchExpressions?: Array<{
+    key: string;
+    operator: "In" | "NotIn" | "Exists" | "DoesNotExist";
+    values?: string[];
+  }>;
+}
+
+export interface TopologySpreadConstraint {
+  labelSelector?: LabelSelector;
+  matchLabelKeys?: string[];
+  maxSkew: number;
+  minDomains?: number;
+  minGroups?: number;
+  nodeAffinityPolicy?: "Honor" | "Ignore";
+  nodeTaintsPolicy?: "Honor" | "Ignore";
+  topologyKey: string;
+  whenUnsatisfiable: "DoNotSchedule" | "ScheduleAnyway";
+}
+
+export interface KeyToPath {
+  key: string;
+  mode?: number;
+  path: string;
+}
+
+export interface DownwardAPIVolumeFile {
+  fieldRef?: {
+    apiVersion?: string;
+    fieldPath: string;
+  };
+  mode?: number;
+  path: string;
+  resourceFieldRef?: {
+    containerName?: string;
+    divisor?: string;
+    resource: string | "limits.cpu" | "limits.memory" | "requests.cpu" | "requests.memory";
+  };
+}
+
+export interface VolumeResourceRequirements {
+  limits?: Record<string, string>;
+  requests?: { storage?: string; [key: string]: string | undefined };
+}
+
+export interface PersistentVolumeClaimSpec {
+  accessModes?: ("ReadWriteOnce" | "ReadOnlyMany" | "ReadWriteMany")[];
+  dataSource?: {
+    name: string;
+    kind?: string;
+    apiGroup?: string;
+  };
+  dataSourceRef?: {
+    apiGroup?: string;
+    kind: string;
+    name: string;
+    namespace?: string;
+  };
+  selector?: LabelSelector;
+  storageClassName?: string;
+  volumeAttributesClassName?: string;
+  resources?: VolumeResourceRequirements;
+  volumeMode?: "Filesystem" | "Block";
+  volumeName?: string;
+}
+
+export interface PersistentVolumeClaimTemplate {
+  metadata?: ObjectMeta;
+  spec: PersistentVolumeClaimSpec;
+}
+
+export interface Volume {
+  // awsElasticBlockStore is deprecated
+  // azureDisk is deprecated
+  // azureFile is deprecated
+  // cephfs is deprecated
+  // cinder is deprecated
+  configMap?: {
+    defaultMode?: number;
+    items?: KeyToPath[];
+    name?: string;
+    optional?: boolean;
+  };
+  csi?: {
+    driver: string;
+    fsType?: string;
+    nodePublishSecretRef?: { name: string };
+    readOnly?: boolean;
+    volumeAttributes?: Record<string, string>;
+  };
+  downwardAPI?: {
+    defaultMode?: number;
+    items?: DownwardAPIVolumeFile[];
+  };
+  emptyDir?: {
+    medium?: "Memory";
+    sizeLimit?: string;
+  };
+  ephemeral?: {
+    volumeClaimTemplate: PersistentVolumeClaimTemplate;
+  };
+  fc?: {
+    fsType?: string;
+    lun?: number;
+    readOnly?: boolean;
+    targetWWNs: string[];
+    wwids?: string[];
+  };
+  // flexVolume is deprecated
+  // flocker is deprecated
+  // gcePersistentDisk is deprecated
+  // gitRepo is deprecated
+  // glusterfs is deprecated
+  hostPath?: {
+    path: string;
+    type?:
+      | "DirectoryOrCreate"
+      | "Directory"
+      | "FileOrCreate"
+      | "File"
+      | "Socket"
+      | "CharDevice"
+      | "BlockDevice";
+  };
+  image?: {
+    pullPolicy?: "Always" | "Never" | "IfNotPresent";
+    reference?: string;
+  };
+  iscsi?: {
+    chapAuthDiscovery?: boolean;
+    chapAuthSession?: boolean;
+    fsType?: string;
+    initiatorName?: string;
+    iqn: string;
+    iscsiInterface?: string;
+    lun: number;
+    portals?: string[];
+    readOnly?: boolean;
+    secretRef?: { name: string };
+    targetPortal: string;
+  };
+  name: string;
+  nfs?: {
+    path: string;
+    readOnly?: boolean;
+    server: string;
+  };
+  persistentVolumeClaim?: {
+    claimName: string;
+    readOnly?: boolean;
+  };
+  // photonPersistentDisk is deprecated
+  // portworxVolume is deprecated
+  projected?: {
+    defaultMode?: number;
+    sources: Array<{
+      clusterTrustBundle?: {
+        labelSelector?: LabelSelector;
+        name?: string;
+        optional?: boolean;
+        path: string;
+        signerName?: string;
+      };
+      configMap?: {
+        items?: KeyToPath[];
+        name?: string;
+        optional?: boolean;
+      };
+      downwardAPI?: {
+        items?: DownwardAPIVolumeFile[];
+      };
+      secret?: {
+        items?: KeyToPath[];
+        name?: string;
+        optional?: boolean;
+      };
+      serviceAccountToken?: {
+        audience?: string;
+        expirationSeconds?: number;
+        path: string;
+      };
+    }>;
+  };
+  // quobyte is deprecated
+  // rbd is deprecated
+  // scaleIO is deprecated
+  secret?: {
+    defaultMode?: number;
+    items?: KeyToPath[];
+    optional?: boolean;
+    secretName?: string;
+  };
+  // storageos is deprecated
+  // vsphereVolume is deprecated
+}
+
+export interface Pod extends KubernetesObject {
+  apiVersion: "v1";
+  kind: "Pod";
+  spec: {
+    activeDeadlineSeconds?: number;
+    affinity?: Affinity;
+    automountServiceAccountToken?: boolean;
+    containers: Container[];
+    dnsConfig?: PodDNSConfig;
+    dnsPolicy?: "ClusterFirst" | "ClusterFirstWithHostNet" | "Default" | "None";
+    enableServiceLinks?: boolean;
+    ephemeralContainers?: EphemeralContainer[];
+    hostAliases?: { ip: string; hostnames?: string[] }[];
+    hostIPC?: boolean;
+    hostNetwork?: boolean;
+    hostPID?: boolean;
+    hostUsers?: boolean;
+    hostname?: string;
+    imagePullSecrets?: { name: string }[];
+    initContainers?: Container[];
+    nodeName?: string;
+    nodeSelector?: Record<string, string>;
+    os?: { name: string };
+    // overhead?: Record<string, string>;
+    preemptionPolicy?: "PreemptLowerPriority" | "Never";
+    priority?: number;
+    priorityClassName?: string;
+    readinessGates?: { conditionType: string }[];
+    // resourceClaims?: Record<string, string>;
+    resources?: ResourceRequirements;
+    restartPolicy?: RestartPolicy;
+    runtimeClassName?: string;
+    schedulerName?: string;
+    schedulingGates?: { name: string }[];
+    securityContext?: PodSecurityContext;
+    /**
+     * @deprecated Use {@link serviceAccountName} instead.
+     */
+    serviceAccount?: string;
+    serviceAccountName?: string;
+    setHostnameAsFQDN?: boolean;
+    shareProcessNamespace?: boolean;
+    subdomain?: string;
+    terminationGracePeriodSeconds?: number;
+    tolerations?: Toleration[];
+    topologySpreadConstraints?: TopologySpreadConstraint[];
+    volumes?: Volume[];
+  };
+  status?: {
+    phase: "Pending" | "Running" | "Succeeded" | "Failed" | "Unknown";
+    conditions?: Condition[];
+  };
 }

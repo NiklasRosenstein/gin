@@ -1,6 +1,6 @@
 export { Gin } from "./gin.ts";
 export { Module, type ModuleOptions, type ResourceAdapter } from "./module.ts";
-export type { KubernetesObject, ObjectMeta, OwnerReference } from "./types.ts";
+export * from "./types.ts";
 export { type SecretProvider, SecretValue } from "./secret.ts";
 export { getGinCacheDir } from "./utils.ts";
 export { type Sink, StdoutSink } from "./sink.ts";
