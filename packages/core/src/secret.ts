@@ -45,6 +45,13 @@ export class SecretValue<T = string> {
     return new SecretValue(fn(this.secretValue));
   }
 
+  /**
+   * Check if the provided value is a `SecretValue` instance or an object with a `secretValue` property.
+   */
+  static isSecretValue<T>(value: unknown): value is SecretValue<T> {
+    return value instanceof SecretValue || (value && typeof value === "object" && "secretValue" in value) as boolean;
+  }
+
   static of<T = string>(value: T): SecretValue<T> {
     return new SecretValue(value);
   }

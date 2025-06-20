@@ -335,7 +335,7 @@ export class Gin {
       // The final processing step is to replace any `SecretValue` instances with their string representation,
       // and drop any `undefined` values as they cannot be stringified to YAML.
       const finalResource = dropUndefined(replaceValues(resource, (val) => {
-        if (val instanceof SecretValue) {
+        if (SecretValue.isSecretValue(val)) {
           return val.secretValue;
         }
         return val;
