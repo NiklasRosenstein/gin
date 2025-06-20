@@ -435,7 +435,7 @@ export interface Container {
   lifecycle?: Lifecycle;
   livenessProbe?: Probe;
   name: string;
-  ports: ContainerPort[];
+  ports?: ContainerPort[];
   readinessProbe?: Probe;
   resizePolicy?: { resourceName: string | "cpu" | "memory"; restartPolicy: RestartPolicy | "NotRequired" }[];
   resources?: ResourceRequirements;
