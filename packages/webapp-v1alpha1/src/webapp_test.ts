@@ -177,6 +177,7 @@ Deno.test("WebAppConverter - should generate deployment with correct configurati
               ],
               securityContext: {
                 allowPrivilegeEscalation: false,
+                capabilities: {},
                 runAsNonRoot: true,
               },
               volumeMounts: [

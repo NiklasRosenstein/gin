@@ -179,6 +179,11 @@ export interface WebApp extends KubernetesObject {
      * Extra containers next to the main container in the pod.
      */
     extraContainers?: Container[];
+
+    /**
+     * Additional security capabilities to add.
+     */
+    capAdd?: string[];
   };
 }
 
@@ -262,6 +267,7 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
                 securityContext: {
                   allowPrivilegeEscalation: false,
                   runAsNonRoot: !resource.spec.allowRunAsRoot,
+                  capabilities: { add: resource.spec.capAdd },
                 },
                 resources: resource.spec.resources,
                 volumeMounts: resource.spec.volumeMounts,
