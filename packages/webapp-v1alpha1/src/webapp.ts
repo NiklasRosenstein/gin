@@ -233,9 +233,14 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
               env: resource.spec.env && Object.keys(resource.spec.env).length > 0
                 ? Object.entries(resource.spec.env).map(([name, value]) => ({ name, value }))
                 : undefined,
-              envFrom: resource.spec.envFromSecrets && resource.spec.envFromSecrets.length > 0
-                ? resource.spec.envFromSecrets.map((secretName) => ({ secretRef: { name: secretName } }))
-                : undefined,
+              envFrom: [
+                ...(
+                  secret ? [{ secretRef: { name: secret.metadata.name! } }] : []
+                ),
+                ...(
+                  (resource.spec.envFromSecrets ?? []).map((secretName) => ({ secretRef: { name: secretName } }))
+                ),
+              ],
               securityContext: {
                 allowPrivilegeEscalation: false,
                 runAsNonRoot: !resource.spec.allowRunAsRoot,

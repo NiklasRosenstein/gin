@@ -168,6 +168,13 @@ Deno.test("WebAppConverter - should generate deployment with correct configurati
                   value: "production",
                 },
               ],
+              envFrom: [
+                {
+                  secretRef: {
+                    name: "example-webapp-env",
+                  },
+                },
+              ],
               securityContext: {
                 allowPrivilegeEscalation: false,
                 runAsNonRoot: true,
