@@ -48,6 +48,15 @@ export interface HelmChart<T> extends KubernetesObject {
     version?: string;
 
     /**
+     * Whether to backfill the `namespace` field on the generated resources. This defaults to `true`. Note that
+     * we do not currently distinguish between cluster-scoped and namespace-scoped resources, so this will backfill
+     * the `namespace` field on all resources, even if they are cluster-scoped.
+     *
+     * Defaults to `true`.
+     */
+    backfillNamespace?: boolean;
+
+    /**
      * Values to pass to the Helm chart. Values of type {@link SecretValue} are accepted.
      */
     values?: T;
@@ -228,6 +237,16 @@ export class HelmChartAdapter implements ResourceAdapter<UntypedHelmChart> {
       for (const doc of docs) {
         doc.metadata = doc.metadata || {};
         doc.metadata.labels = { ...doc.metadata.labels, ...resource.metadata.labels };
+      }
+    }
+
+    // Backfill namespace if requested
+    if (resource.spec.backfillNamespace !== false) {
+      for (const doc of docs) {
+        if (!doc.metadata?.namespace && resource.metadata.namespace) {
+          doc.metadata = doc.metadata || {};
+          doc.metadata.namespace = resource.metadata.namespace;
+        }
       }
     }
 
