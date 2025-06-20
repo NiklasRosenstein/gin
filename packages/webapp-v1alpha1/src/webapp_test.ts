@@ -102,6 +102,7 @@ Deno.test("WebAppConverter - should generate deployment with correct configurati
       host: "example.com",
       port: 3000,
       env: { NODE_ENV: "production" },
+      secretEnv: { JWT_SECRET: SecretValue.of("FOOBAR") },
       tolerations: [
         {
           key: "example.com/special",
@@ -127,10 +128,11 @@ Deno.test("WebAppConverter - should generate deployment with correct configurati
     },
   });
 
-  const resources = await converter.generate(gin, webapp);
+  const resources = await Gin.staticCaptureEmitMany(await converter.generate(gin, webapp));
   const deployment = resources.find((r) => r.kind === "Deployment");
   const service = resources.find((r) => r.kind === "Service");
   const ingress = resources.find((r) => r.kind === "Ingress");
+  const secret = resources.find((r) => r.kind === "Secret");
 
   assertEquals(deployment, {
     apiVersion: "apps/v1",
@@ -138,6 +140,7 @@ Deno.test("WebAppConverter - should generate deployment with correct configurati
     metadata: {
       name: "example-webapp",
       namespace: "default",
+      annotations: {},
     },
     spec: {
       replicas: 3,
@@ -204,6 +207,7 @@ Deno.test("WebAppConverter - should generate deployment with correct configurati
     metadata: {
       name: "example-webapp",
       namespace: "default",
+      annotations: {},
     },
     spec: {
       selector: {
@@ -249,6 +253,20 @@ Deno.test("WebAppConverter - should generate deployment with correct configurati
           },
         },
       ],
+    },
+  });
+
+  assertEquals(secret, {
+    apiVersion: "v1",
+    kind: "Secret",
+    metadata: {
+      name: "example-webapp-env",
+      namespace: "default",
+      annotations: {},
+    },
+    type: "Opaque",
+    stringData: {
+      JWT_SECRET: "FOOBAR",
     },
   });
 });
