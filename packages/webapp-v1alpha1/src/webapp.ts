@@ -6,6 +6,7 @@ import type {
   Gin,
   KubernetesObject,
   Pod,
+  PodSecurityContext,
   ResourceAdapter,
   Secret,
   SecretValue,
@@ -184,6 +185,21 @@ export interface WebApp extends KubernetesObject {
      * Additional security capabilities to add.
      */
     capAdd?: string[];
+
+    /**
+     * Specify the user ID to run the container as.
+     */
+    runAsUser?: number;
+
+    /**
+     * Specify the group ID to run the container as.
+     */
+    runAsGroup?: number;
+
+    /**
+     * Pod-level security context.
+     */
+    securityContext?: PodSecurityContext;
   };
 }
 
@@ -242,6 +258,7 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
             annotations: resource.spec.podAnnotations,
           },
           spec: {
+            securityContext: resource.spec.securityContext,
             containers: [
               dropUndefined({
                 name: "web",
@@ -268,6 +285,8 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
                   allowPrivilegeEscalation: false,
                   runAsNonRoot: !resource.spec.allowRunAsRoot,
                   capabilities: { add: resource.spec.capAdd },
+                  runAsUser: resource.spec.runAsUser,
+                  runAsGroup: resource.spec.runAsGroup,
                 },
                 resources: resource.spec.resources,
                 volumeMounts: resource.spec.volumeMounts,
