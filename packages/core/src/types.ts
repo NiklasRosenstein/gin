@@ -476,7 +476,7 @@ export interface PodSecurityContext {
     type: "RuntimeDefault" | "Localhost" | "Unconfined";
   };
   fsGroup?: number;
-  fsgroupChangePolicy?: "OnRootMismatch" | "Always";
+  fsGroupChangePolicy?: "OnRootMismatch" | "Always";
   runAsGroup?: number;
   runAsNonRoot?: boolean;
   runAsUser?: number;
