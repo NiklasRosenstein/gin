@@ -269,6 +269,7 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
                   {
                     containerPort: resource.spec.port ?? 8080,
                   },
+                  ...resource.spec.extraPorts ?? [],
                 ],
                 env: resource.spec.env && Object.keys(resource.spec.env).length > 0
                   ? Object.entries(resource.spec.env).map(([name, value]) => ({ name, value }))
