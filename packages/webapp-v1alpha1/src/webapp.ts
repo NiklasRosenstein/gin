@@ -1,6 +1,7 @@
 import { _ } from "@gin/core";
 import type {
   Affinity,
+  ConfigMap,
   Container,
   ContainerPort,
   Gin,
@@ -17,6 +18,7 @@ import type {
   VolumeMount,
 } from "@gin/core";
 import { dropUndefined } from "@gin/core/utils";
+import { basename } from "@std/path/basename";
 
 export interface WebApp extends KubernetesObject {
   apiVersion: "webapp.gin.jsr.io/v1alpha1";
@@ -77,6 +79,20 @@ export interface WebApp extends KubernetesObject {
      * the values will be used to create a new `Secret` resource and mounted as environment variables.
      */
     secretEnv?: Record<string, SecretValue<string>>;
+
+    /**
+     * Configuration files to mount in the main containers. The keys are the names of the files, and the values are the
+     * contents of the files. These will be mounted as ConfigMaps. Note that the keys should be full paths, but their
+     * basenames will be used as the names of the files in the ConfigMap.
+     */
+    configFiles?: Record<string, string>;
+
+    /**
+     * Secret configuration files to mount in the main containers. The keys are the names of the files, and the
+     * values are the contents of the files. These will be mounted as Secrets. Note that the keys should be full paths,
+     * but their basenames will be used as the names of the files in the Secret.
+     */
+    secretConfigFiles?: Record<string, SecretValue<string>>;
 
     /**
      * Additional environment variables to set in the main container read from secrets.
@@ -237,6 +253,37 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
       });
     }
 
+    let secretConfig: Secret | undefined = undefined;
+    if (resource.spec.secretConfigFiles && Object.keys(resource.spec.secretConfigFiles).length > 0) {
+      secretConfig = dropUndefined({
+        apiVersion: "v1",
+        kind: "Secret",
+        metadata: {
+          name: `${resource.metadata.name}-config`,
+          namespace: resource.metadata.namespace,
+        },
+        type: "Opaque",
+        stringData: Object.fromEntries(
+          Object.entries(resource.spec.secretConfigFiles).map(([key, value]) => [basename(key), value]),
+        ),
+      });
+    }
+
+    let configMap: ConfigMap | undefined = undefined;
+    if (resource.spec.configFiles && Object.keys(resource.spec.configFiles).length > 0) {
+      configMap = dropUndefined({
+        apiVersion: "v1",
+        kind: "ConfigMap",
+        metadata: {
+          name: `${resource.metadata.name}-config`,
+          namespace: resource.metadata.namespace,
+        },
+        data: Object.fromEntries(
+          Object.entries(resource.spec.configFiles).map(([key, value]) => [basename(key), value]),
+        ),
+      });
+    }
+
     const deployment: KubernetesObject = dropUndefined({
       apiVersion: "apps/v1",
       kind: "Deployment",
@@ -290,7 +337,21 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
                   runAsGroup: resource.spec.runAsGroup,
                 },
                 resources: resource.spec.resources,
-                volumeMounts: resource.spec.volumeMounts,
+                volumeMounts: [
+                  ...resource.spec.volumeMounts ?? [],
+                  ...(Object.keys(resource.spec.configFiles ?? {}).map((fileName) => ({
+                    name: "config",
+                    mountPath: fileName,
+                    subPath: basename(fileName),
+                    readOnly: true,
+                  }))),
+                  ...(Object.keys(resource.spec.secretConfigFiles ?? {}).map((fileName) => ({
+                    name: "secret-config",
+                    mountPath: fileName,
+                    subPath: basename(fileName),
+                    readOnly: true,
+                  }))),
+                ],
               }),
               ...resource.spec.extraContainers ?? [],
             ],
@@ -300,7 +361,11 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
             tolerations: resource.spec.tolerations,
             affinity: resource.spec.affinity,
             topologySpreadConstraints: resource.spec.topologySpreadConstraints,
-            volumes: resource.spec.volumes,
+            volumes: [
+              ...resource.spec.volumes ?? [],
+              ...(configMap ? [{ configMap: { name: configMap.metadata.name! }, name: "config" }] : []),
+              ...(secretConfig ? [{ secret: { secretName: secretConfig.metadata.name! }, name: "secret-config" }] : []),
+            ],
           },
         }),
       },
@@ -382,6 +447,6 @@ export class WebAppConverter implements ResourceAdapter<WebApp> {
       },
     });
 
-    return Promise.resolve(dropUndefined([secret, deployment, service, ingress]));
+    return Promise.resolve(dropUndefined([secret, configMap, secretConfig, deployment, service, ingress]));
   }
 }
